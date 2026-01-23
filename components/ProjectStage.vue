@@ -5,8 +5,8 @@
     <div class="center">
       <div class="mediaWrap" ref="mediaWrap">
         <NuxtLink class="mediaLink" :to="`/project/${current.id}`" aria-label="Open project" data-cursor>
-          <img class="media base" :class="{ ripple: rippleActive }" :src="currentSrc" :alt="currentAlt" ref="baseImg" />
-          <img v-if="transitioning" class="media top" :class="{ ripple: rippleActive }" :src="incomingSrc" :alt="incomingAlt" ref="topImg" />
+          <img class="media base" :class="{ ripple: rippleActive }" :src="currentSrc" :alt="currentAlt" ref="baseImg" loading="eager" decoding="async" fetchpriority="high" />
+          <img v-if="transitioning" class="media top" :class="{ ripple: rippleActive }" :src="incomingSrc" :alt="incomingAlt" ref="topImg" loading="eager" decoding="async" />
         </NuxtLink>
         <a class="play" :href="current.link" target="_blank" rel="noreferrer" data-cursor>( OPEN )</a>
 

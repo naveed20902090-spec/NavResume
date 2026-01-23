@@ -1,11 +1,12 @@
 :root{
-  --bg:#ffffff;
-  --fg:#0b0b0b;
-  /* Light mode needed more contrast for readability */
-  --muted:rgba(0,0,0,.70);
-  --muted2:rgba(0,0,0,.56);
-  --line:rgba(0,0,0,.26);
-  --bar: rgba(0,0,0,.00);
+  /* Default: dark mode (prevents light flash before JS applies theme) */
+  --bg:#000000;
+  --fg:#f6f6f6;
+  --muted:rgba(255,255,255,.44);
+  --muted2:rgba(255,255,255,.26);
+  --line:rgba(255,255,255,.14);
+  --bar: rgba(255,255,255,.00);
+
   --padX: 3.2vw;
   --padY: 2.2vh;
   --font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -14,14 +15,14 @@
   --ls: 0.08em;
 }
 
-html[data-theme="dark"]{
-  /* Pitch black requested */
-  --bg:#000000;
-  --fg:#f6f6f6;
-  --muted:rgba(255,255,255,.44);
-  --muted2:rgba(255,255,255,.26);
-  --line:rgba(255,255,255,.14);
-  --bar: rgba(255,255,255,.00);
+html[data-theme="light"]{
+  /* Light mode needed more contrast for readability */
+  --bg:#ffffff;
+  --fg:#0b0b0b;
+  --muted:rgba(0,0,0,.70);
+  --muted2:rgba(0,0,0,.56);
+  --line:rgba(0,0,0,.26);
+  --bar: rgba(0,0,0,.00);
 }
 
 *{ box-sizing:border-box; }
@@ -98,14 +99,17 @@ button{
   width: 10px;
   height: 10px;
   border-radius:999px;
-  background: currentColor;
-  opacity: .16;
+  background: var(--fg);
+  opacity: .22;
   transform: translate(-50%, -50%);
   pointer-events:none;
   z-index: 9998;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
-html[data-theme="dark"] .cursorDot{ mix-blend-mode: screen; }
+
+/* Theme-specific blending (keeps dot readable on pure black/white). */
+html[data-theme="dark"] .cursorDot{ mix-blend-mode: difference; opacity: .28; }
+html[data-theme="light"] .cursorDot{ mix-blend-mode: multiply; opacity: .16; }
 
 @media (hover: none), (pointer: coarse){
   .cursorDot{ display:none; }

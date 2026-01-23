@@ -3,7 +3,7 @@ import { onMounted, watch } from 'vue'
 export type ThemeMode = 'light' | 'dark'
 
 export function useTheme(){
-  const theme = useState<ThemeMode>('theme', () => 'light')
+  const theme = useState<ThemeMode>('theme', () => 'dark')
 
   function apply(mode: ThemeMode){
     theme.value = mode
@@ -23,7 +23,7 @@ export function useTheme(){
       try{ return localStorage.getItem('theme') as ThemeMode | null } catch { return null }
     })()
     if (stored === 'dark' || stored === 'light') apply(stored)
-    else apply('light')
+    else apply('dark')
   })
 
   // Keep DOM in sync on SSR hydration updates

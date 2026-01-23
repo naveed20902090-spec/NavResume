@@ -12,6 +12,7 @@ export default defineNuxtConfig({
         // Replace with the exact font once known; this is a close visual surrogate.
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'preload', as: 'image', href: 'https://i.ytimg.com/vi/6k_Esgfw57k/hqdefault.jpg', crossorigin: '' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap' },
       ],
     }

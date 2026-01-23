@@ -27,9 +27,9 @@
 
     <Teleport to="body">
       <Transition :css="false" @enter="enterListing" @leave="leaveListing">
-        <div v-if="listingOpen" class="listing" role="dialog" aria-modal="true">
-          <div class="listingInner">
-            <div class="k">WORK</div>
+        <div v-if="listingOpen" class="listing" role="dialog" aria-modal="true" aria-labelledby="listingTitle" ref="listingEl" @pointerdown.self="closeListing">
+          <div class="listingInner" ref="listingInner" tabindex="-1">
+            <div class="k" id="listingTitle">WORK</div>
             <div class="k dim2" style="margin-top:6px;">( click a project )</div>
 
             <div class="list">
@@ -37,7 +37,7 @@
                 v-for="(p, i) in projects"
                 :key="p.id"
                 class="row"
-                @click="jump(i); listingOpen=false; navigateTo(`/project/${p.id}`)"
+                @click="selectProject(i, p.id)"
               >
                 <span class="k">{{ p.title }}</span>
                 <span class="k dim2">{{ p.badge }}</span>
@@ -50,7 +50,7 @@
               <a class="k dim2" :href="site.hero.links.instagram" target="_blank" rel="noreferrer">( INSTAGRAM )</a>
             </div>
 
-            <button class="close k" @click="listingOpen=false">( CLOSE )</button>
+            <button class="close k" @click="closeListing">( CLOSE )</button>
           </div>
         </div>
       </Transition>
@@ -68,8 +68,117 @@ const idx = ref(0)
 const listingOpen = ref(false)
 const year = String(new Date().getFullYear())
 
+const listingEl = ref<HTMLElement | null>(null)
+const listingInner = ref<HTMLElement | null>(null)
+
+const lastActiveEl = ref<HTMLElement | null>(null)
+const restoreFocus = ref(true)
+
 function jump(i:number){ idx.value = i }
-function toggleListing(){ listingOpen.value = !listingOpen.value }
+
+function openListing(){
+  if (process.client) {
+    restoreFocus.value = true
+    lastActiveEl.value = document.activeElement as HTMLElement | null
+  }
+  listingOpen.value = true
+}
+
+function closeListing(){
+  listingOpen.value = false
+}
+
+function toggleListing(){
+  if (listingOpen.value) closeListing()
+  else openListing()
+}
+
+function selectProject(i:number, id:string){
+  restoreFocus.value = false
+  jump(i)
+  closeListing()
+  navigateTo(`/project/${id}`)
+}
+
+const focusableSel = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+function getFocusables(){
+  const root = listingInner.value
+  if (!process.client || !root) return []
+  return Array.from(root.querySelectorAll<HTMLElement>(focusableSel))
+    .filter(el => !el.hasAttribute('disabled') && el.tabIndex !== -1)
+}
+
+let keyHandler: ((e: KeyboardEvent) => void) | null = null
+
+watch(listingOpen, async (open) => {
+  if (!process.client) return
+
+  if (open) {
+    document.body.style.overflow = 'hidden'
+    await nextTick()
+
+    const focusables = getFocusables()
+    ;(focusables[0] ?? listingInner.value)?.focus?.()
+
+    keyHandler = (e: KeyboardEvent) => {
+      if (!listingOpen.value) return
+
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeListing()
+        return
+      }
+
+      if (e.key !== 'Tab') return
+
+      const els = getFocusables()
+      if (!els.length) {
+        e.preventDefault()
+        listingInner.value?.focus?.()
+        return
+      }
+
+      const first = els[0]
+      const last = els[els.length - 1]
+      const active = document.activeElement as HTMLElement | null
+      const inside = !!(active && listingInner.value?.contains(active))
+
+      if (e.shiftKey) {
+        if (!inside || active === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (!inside || active === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', keyHandler)
+  } else {
+    document.body.style.overflow = ''
+    if (keyHandler) {
+      document.removeEventListener('keydown', keyHandler)
+      keyHandler = null
+    }
+
+    await nextTick()
+    if (restoreFocus.value) {
+      const el = lastActiveEl.value
+      if (el && document.contains(el)) {
+        try { el.focus() } catch {}
+      }
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (!process.client) return
+  document.body.style.overflow = ''
+  if (keyHandler) document.removeEventListener('keydown', keyHandler)
+})
 
 function reduce(){
   if (!process.client) return true

@@ -40,7 +40,7 @@
         <aside class="rightCol">
           <figure class="portrait" data-reveal>
             <div class="mat">
-              <img class="photo" src="/profile.jpg" alt="Tauseef Rahman portrait" />
+              <img class="photo" src="/profile.jpg" alt="Tauseef Rahman portrait" loading="lazy" decoding="async" />
             </div>
             <figcaption class="k dim2 cap">
               {{ site.displayName.toUpperCase() }} • {{ site.handle.toUpperCase() }} • {{ site.location.toUpperCase() }}
