@@ -40,7 +40,19 @@
         <aside class="rightCol">
           <figure class="portrait" data-reveal>
             <div class="mat">
-              <img class="photo" src="/profile.jpg" alt="Tauseef Rahman portrait" loading="lazy" decoding="async" />
+              <div
+                ref="portraitStage"
+                class="photoStage"
+                :data-active="portraitActive ? '1' : '0'"
+                :style="portraitStyle"
+                @pointerenter="onPortraitEnter"
+                @pointermove="onPortraitMove"
+                @pointerleave="onPortraitLeave"
+              >
+                <img class="photo photoColor" src="/profile.jpg" alt="Tauseef Rahman portrait" loading="lazy" decoding="async" />
+                <img class="photo photoBW" src="/profile.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+                <div class="halo" aria-hidden="true"></div>
+              </div>
             </div>
             <figcaption class="k dim2 cap">
               {{ site.displayName.toUpperCase() }} • {{ site.handle.toUpperCase() }} • {{ site.location.toUpperCase() }}
@@ -69,11 +81,62 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { site } from '~/content/site'
 import { projects } from '~/composables/useProjects'
 
 const total = computed(() => projects.length)
+
+// Portrait: grayscale base with localized color reveal on hover
+const portraitStage = ref<HTMLElement | null>(null)
+const portraitActive = ref(false)
+const mx = ref(50)
+const my = ref(50)
+let raf: number | null = null
+let pendingX = 50
+let pendingY = 50
+
+function updateFromEvent(e: PointerEvent) {
+  const el = portraitStage.value
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const x = ((e.clientX - r.left) / r.width) * 100
+  const y = ((e.clientY - r.top) / r.height) * 100
+  pendingX = Math.max(0, Math.min(100, x))
+  pendingY = Math.max(0, Math.min(100, y))
+
+  if (raf == null) {
+    raf = requestAnimationFrame(() => {
+      raf = null
+      mx.value = pendingX
+      my.value = pendingY
+    })
+  }
+}
+
+function onPortraitEnter(e: PointerEvent) {
+  portraitActive.value = true
+  updateFromEvent(e)
+}
+
+function onPortraitMove(e: PointerEvent) {
+  if (!portraitActive.value) return
+  updateFromEvent(e)
+}
+
+function onPortraitLeave() {
+  portraitActive.value = false
+}
+
+onBeforeUnmount(() => {
+  if (raf != null) cancelAnimationFrame(raf)
+})
+
+const portraitStyle = computed(() => ({
+  '--mx': `${mx.value}%`,
+  '--my': `${my.value}%`,
+}))
+
 </script>
 
 
@@ -137,13 +200,82 @@ const total = computed(() => projects.length)
   position: sticky;
   top: 88px;
 }
-.photo{
-  width:100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  display:block;
-  filter: grayscale(1) contrast(1.05) brightness(0.98);
+@property --revealR{
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
 }
+@property --haloR{
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+.photoStage{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 10px;
+  --mx: 50%;
+  --my: 50%;
+  --revealR: 0px;
+  --haloR: 0px;
+  transition: --revealR .18s ease, --haloR .18s ease;
+}
+.photoStage[data-active="1"]{
+  --revealR: 120px;
+  --haloR: 165px;
+}
+.photo{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photoBW{
+  filter: grayscale(1) contrast(1.05) brightness(0.98);
+  -webkit-mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my),
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) 54%,
+    rgba(0,0,0,0.55) 72%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,1) 100%);
+  mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my),
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) 54%,
+    rgba(0,0,0,0.55) 72%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,1) 100%);
+}
+
+.halo{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .16s ease;
+  background: radial-gradient(circle var(--haloR) at var(--mx) var(--my),
+    color-mix(in srgb, var(--fg) 34%, transparent) 0%,
+    color-mix(in srgb, var(--fg) 18%, transparent) 32%,
+    transparent 64%);
+  mix-blend-mode: screen;
+}
+.photoStage[data-active="1"] .halo{ opacity: 1; }
+
+@media (prefers-reduced-motion: reduce){
+  .photoStage{ transition: none; }
+  .halo{ transition: none; }
+}
+
+@media (hover: none), (pointer: coarse){
+  .photoBW{ -webkit-mask-image: none; mask-image: none; }
+  .halo{ display: none; }
+}
+
 .cap{
   margin-top: 12px;
   line-height: 1.4;
