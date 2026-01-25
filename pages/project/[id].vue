@@ -11,18 +11,21 @@
     <section class="body">
       <div class="k dim2" data-reveal>{{ project.badge.toUpperCase() }} • {{ project.category.toUpperCase() }}</div>
       <div class="k title" data-reveal>( {{ project.title.toUpperCase() }} )</div>
+
+      <div class="topBar" data-reveal>
+        <div class="k dim2">( {{ currentIndex + 1 }} / {{ total }} )</div>
+        <div class="topControls">
+          <button class="k dim2 ctl" @click="onUserToggleAudio">( • {{ audioLabel.toUpperCase() }} )</button>
+        </div>
+      </div>
       <p class="p lead" data-reveal>{{ project.desc }}</p>
 
       <div class="player" data-reveal>
         <div class="ratio">
-          <iframe
-            class="iframe"
-            :src="`https://www.youtube-nocookie.com/embed/${project.youtubeId}?rel=0&modestbranding=1`"
-            title="YouTube player"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
+          <div ref="playerEl" class="iframe" aria-label="YouTube player"></div>
+
+          <button class="switch left" @click="goPrev" :aria-label="'Previous project'">( ‹ )</button>
+          <button class="switch right" @click="goNext" :aria-label="'Next project'">( › )</button>
         </div>
       </div>
 
@@ -91,8 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue'
 import { projects } from '~/composables/useProjects'
+import { useAudio } from '~/composables/useAudio'
 
 const route = useRoute()
 const id = computed(() => String(route.params.id || ''))
@@ -100,6 +104,112 @@ const project = computed(() => projects.find(p => p.id === id.value) || projects
 
 const total = computed(() => projects.length)
 const currentIndex = computed(() => Math.max(0, projects.findIndex(p => p.id === project.value.id)))
+
+// Audio controls (surface a mute toggle at the top of the project page)
+const { enabled, label: audioLabel, toggle, setEnabled } = useAudio()
+const userToggledAudio = ref(false)
+function onUserToggleAudio(){
+  userToggledAudio.value = true
+  toggle()
+}
+
+// Prev/Next navigation while staying inside the project page
+function goPrev(){
+  const i = (currentIndex.value - 1 + total.value) % total.value
+  jumpTo(i)
+}
+function goNext(){
+  const i = (currentIndex.value + 1) % total.value
+  jumpTo(i)
+}
+
+// YouTube embed with play-state detection (to auto-mute BGM while video plays)
+const playerEl = ref<HTMLElement | null>(null)
+let ytPlayer: any = null
+let ytLoadPromise: Promise<void> | null = null
+let autoMuted = false
+let restoreAfter = false
+
+function loadYouTubeAPI(): Promise<void> {
+  if (!process.client) return Promise.resolve()
+  const w = window as any
+  if (w.YT && w.YT.Player) return Promise.resolve()
+  if (ytLoadPromise) return ytLoadPromise
+
+  ytLoadPromise = new Promise((resolve) => {
+    const prev = w.onYouTubeIframeAPIReady
+    w.onYouTubeIframeAPIReady = () => {
+      try{ prev?.() } catch {}
+      resolve()
+    }
+    const s = document.createElement('script')
+    s.src = 'https://www.youtube.com/iframe_api'
+    s.async = true
+    document.head.appendChild(s)
+  })
+  return ytLoadPromise
+}
+
+function destroyPlayer(){
+  try{ ytPlayer?.destroy?.() } catch {}
+  ytPlayer = null
+}
+
+function onVideoState(state: number){
+  // 1 = playing, 2 = paused, 0 = ended (YT.PlayerState)
+  if (state === 1){
+    // Auto-mute BGM only if it was on
+    if (enabled.value){
+      restoreAfter = true
+      autoMuted = true
+      userToggledAudio.value = false
+      setEnabled(false)
+    }
+  } else if (state === 2 || state === 0){
+    if (autoMuted && restoreAfter && !userToggledAudio.value){
+      setEnabled(true)
+    }
+    autoMuted = false
+    restoreAfter = false
+  }
+}
+
+async function mountPlayer(){
+  if (!process.client) return
+  await nextTick()
+  if (!playerEl.value) return
+
+  destroyPlayer()
+  await loadYouTubeAPI()
+
+  const w = window as any
+  if (!w.YT || !w.YT.Player) return
+
+  ytPlayer = new w.YT.Player(playerEl.value, {
+    host: 'https://www.youtube-nocookie.com',
+    videoId: project.value.youtubeId,
+    playerVars: {
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+    },
+    events: {
+      onStateChange: (e: any) => onVideoState(e.data),
+    },
+  })
+}
+
+onMounted(() => {
+  mountPlayer()
+})
+
+watch(() => project.value.youtubeId, () => {
+  mountPlayer()
+})
+
+onBeforeUnmount(() => {
+  destroyPlayer()
+})
 
 function jumpTo(i:number){
   const p = projects[i]
@@ -128,6 +238,24 @@ function jumpTo(i:number){
   line-height: 1.65;
   font-size: calc(var(--fs) * 1.02);
 }
+
+.topBar{
+  margin-top: 10px;
+  margin-bottom: 8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+.topControls{ display:flex; align-items:center; gap: 10px; }
+.ctl{
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  padding: 8px 10px;
+  cursor:pointer;
+  transition: opacity .18s ease, border-color .18s ease;
+}
+.ctl:hover{ border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); opacity: .72; }
 .player{
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--bg) 78%, transparent);
@@ -144,6 +272,27 @@ function jumpTo(i:number){
   inset:0;
   width:100%;
   height:100%;
+}
+
+.switch{
+  position:absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(6px);
+  padding: 10px 12px;
+  cursor:pointer;
+  opacity: .62;
+  transition: opacity .18s ease, border-color .18s ease;
+}
+.switch:hover{ opacity: .90; border-color: color-mix(in srgb, var(--fg) 26%, var(--bg)); }
+.switch.left{ left: 10px; }
+.switch.right{ right: 10px; }
+
+@media (max-width: 860px){
+  .topBar{ flex-direction: column; align-items:flex-start; }
+  .switch{ display:none; }
 }
 
 .plaqueRow{

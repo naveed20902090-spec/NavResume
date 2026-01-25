@@ -88,40 +88,48 @@ import { projects } from '~/composables/useProjects'
 const total = computed(() => projects.length)
 
 // Portrait: grayscale base with localized color reveal on hover
+// Make the mask motion "flowy" by lerping toward the pointer.
 const portraitStage = ref<HTMLElement | null>(null)
 const portraitActive = ref(false)
 const mx = ref(50)
 const my = ref(50)
-let raf: number | null = null
-let pendingX = 50
-let pendingY = 50
 
-function updateFromEvent(e: PointerEvent) {
+let raf: number | null = null
+let tx = 50
+let ty = 50
+
+function setTargetFromEvent(e: PointerEvent) {
   const el = portraitStage.value
   if (!el) return
   const r = el.getBoundingClientRect()
   const x = ((e.clientX - r.left) / r.width) * 100
   const y = ((e.clientY - r.top) / r.height) * 100
-  pendingX = Math.max(0, Math.min(100, x))
-  pendingY = Math.max(0, Math.min(100, y))
+  tx = Math.max(0, Math.min(100, x))
+  ty = Math.max(0, Math.min(100, y))
+}
 
-  if (raf == null) {
-    raf = requestAnimationFrame(() => {
-      raf = null
-      mx.value = pendingX
-      my.value = pendingY
-    })
+function tick(){
+  raf = null
+  // easing factor: higher = snappier
+  const a = portraitActive.value ? 0.18 : 0.12
+  mx.value = mx.value + (tx - mx.value) * a
+  my.value = my.value + (ty - my.value) * a
+
+  const near = Math.abs(tx - mx.value) + Math.abs(ty - my.value) < 0.08
+  if (portraitActive.value || !near) {
+    raf = requestAnimationFrame(tick)
   }
 }
 
 function onPortraitEnter(e: PointerEvent) {
   portraitActive.value = true
-  updateFromEvent(e)
+  setTargetFromEvent(e)
+  if (raf == null) raf = requestAnimationFrame(tick)
 }
 
 function onPortraitMove(e: PointerEvent) {
   if (!portraitActive.value) return
-  updateFromEvent(e)
+  setTargetFromEvent(e)
 }
 
 function onPortraitLeave() {
@@ -221,11 +229,11 @@ const portraitStyle = computed(() => ({
   --my: 50%;
   --revealR: 0px;
   --haloR: 0px;
-  transition: --revealR .18s ease, --haloR .18s ease;
+  transition: --revealR .26s ease, --haloR .26s ease;
 }
 .photoStage[data-active="1"]{
-  --revealR: 120px;
-  --haloR: 165px;
+  --revealR: 132px;
+  --haloR: 178px;
 }
 .photo{
   position: absolute;

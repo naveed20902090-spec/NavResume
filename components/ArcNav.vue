@@ -1,8 +1,16 @@
 <template>
   <div ref="wrap" class="wrap" :class="side" @mouseenter="onEnter" @mouseleave="onLeave">
     <svg class="svg" viewBox="0 0 220 220" aria-hidden="true">
-      <path v-for="(d, i) in paths" :key="i" class="arc" :class="{ active: i === activeArc }" :d="d" />
-      <polygon class="tri" :points="triPoints" />
+      <path
+        v-for="(p, i) in paths"
+        :key="i"
+        class="arc"
+        :class="{ active: i === activeArc }"
+        :d="p.d"
+        :style="{ strokeWidth: String(p.w), opacity: String(p.o) }"
+      />
+      <circle class="dot" :cx="dotCx" cy="110" r="2.2" />
+      <path class="chev" :d="chevD" />
     </svg>
 
     <Transition name="count" mode="out-in">
@@ -24,24 +32,34 @@ const props = withDefaults(defineProps<{
 
 defineEmits<{ (e:'activate'):void }>()
 
-// Make arcs face inward toward the project:
-// left side uses sweep=0 (bulges left => "(")
-// right side uses sweep=1 (bulges right => ")")
-const sweep = computed(() => (props.side === 'left' ? 0 : 1))
-const paths = computed(() => {
-  const s = sweep.value
-  return [
-    `M 110 18 A 92 92 0 0 ${s} 110 202`,
-    `M 110 30 A 80 80 0 0 ${s} 110 190`,
-    `M 110 44 A 66 66 0 0 ${s} 110 176`,
-  ]
-})
+// Replace the strict "brackets" with a more organic, calligraphic mark.
+// Still minimal — just feels more "drawn" and less UI-like.
+type Stroke = { d: string; w: number; o: number }
 
-const triPoints = computed(() => {
-  // small pointer on the inner edge, pointing toward the project
+function leftStrokes(): Stroke[]{
+  return [
+    { d: 'M 154 18 C 88 44 70 88 92 116 C 114 146 92 176 154 202', w: 1.3, o: 0.22 },
+    { d: 'M 148 26 C 94 52 78 90 98 114 C 116 138 98 170 148 194', w: 1.05, o: 0.18 },
+    { d: 'M 142 38 C 102 62 92 92 108 112 C 124 132 110 160 142 182', w: 0.9, o: 0.15 },
+  ]
+}
+
+function rightStrokes(): Stroke[]{
+  return [
+    { d: 'M 66 18 C 132 44 150 88 128 116 C 106 146 128 176 66 202', w: 1.3, o: 0.22 },
+    { d: 'M 72 26 C 126 52 142 90 122 114 C 104 138 122 170 72 194', w: 1.05, o: 0.18 },
+    { d: 'M 78 38 C 118 62 128 92 112 112 C 96 132 110 160 78 182', w: 0.9, o: 0.15 },
+  ]
+}
+
+const paths = computed<Stroke[]>(() => props.side === 'left' ? leftStrokes() : rightStrokes())
+
+const dotCx = computed(() => (props.side === 'left' ? 188 : 32))
+const chevD = computed(() => {
+  // small inward chevron (subtle, more "gallery" than arrow)
   return props.side === 'left'
-    ? '202 110 196 106 196 114'  // >
-    : '18 110 24 106 24 114'     // <
+    ? 'M 180 110 L 172 104 M 180 110 L 172 116'
+    : 'M 40 110 L 48 104 M 40 110 L 48 116'
 })
 
 const wrap = ref<HTMLElement | null>(null)
@@ -86,12 +104,19 @@ function onLeave(){ hoverTl?.reverse() }
 .arc{
   fill:none;
   stroke: currentColor;
-  stroke-width: 1;
   stroke-linecap: round;
   opacity: .22;
 }
 .arc.active{ opacity: .38; }
-.tri{ fill: currentColor; opacity: .55; }
+
+.dot{ fill: currentColor; opacity: .38; }
+.chev{
+  fill:none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: .42;
+}
 
 .centerLabel{
   position:absolute;
