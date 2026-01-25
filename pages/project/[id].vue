@@ -21,11 +21,11 @@
       <p class="p lead" data-reveal>{{ project.desc }}</p>
 
       <div class="player" data-reveal>
+        <button class="switch left" @click="goPrev" :aria-label="'Previous project'">( ‹ )</button>
+        <button class="switch right" @click="goNext" :aria-label="'Next project'">( › )</button>
+
         <div class="ratio">
           <div ref="playerEl" class="iframe" aria-label="YouTube player"></div>
-
-          <button class="switch left" @click="goPrev" :aria-label="'Previous project'">( ‹ )</button>
-          <button class="switch right" @click="goNext" :aria-label="'Next project'">( › )</button>
         </div>
       </div>
 
@@ -221,6 +221,7 @@ function jumpTo(i:number){
 <style scoped>
 .body{
   flex:1;
+  overflow-x: hidden;
   padding-top: 6vh;
   padding-bottom: 6vh;
   max-width: 980px;
@@ -257,9 +258,11 @@ function jumpTo(i:number){
 }
 .ctl:hover{ border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); opacity: .72; }
 .player{
+  position:relative;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   padding: 12px;
+  overflow: visible;
 }
 .ratio{
   position:relative;
@@ -272,6 +275,13 @@ function jumpTo(i:number){
   inset:0;
   width:100%;
   height:100%;
+}
+
+.ratio :deep(iframe){
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
 }
 
 .switch{
@@ -287,8 +297,8 @@ function jumpTo(i:number){
   transition: opacity .18s ease, border-color .18s ease;
 }
 .switch:hover{ opacity: .90; border-color: color-mix(in srgb, var(--fg) 26%, var(--bg)); }
-.switch.left{ left: 10px; }
-.switch.right{ right: 10px; }
+.switch.left{ left: -54px; }
+.switch.right{ right: -54px; }
 
 @media (max-width: 860px){
   .topBar{ flex-direction: column; align-items:flex-start; }

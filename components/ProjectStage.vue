@@ -15,30 +15,30 @@
             @pointermove="onMove"
             @pointerleave="onLeave"
           >
-            <!-- Color base (revealed under grayscale mask) -->
+            <!-- B&W base (always visible) -->
             <img
-              class="media color base"
+              class="media bw base"
               :src="currentSrc"
               :alt="currentAlt"
-              ref="baseColorImg"
+              ref="baseBwImg"
               loading="eager"
               decoding="async"
               fetchpriority="high"
             />
-            <!-- Grayscale mask on top (hole reveals color near cursor) -->
+            <!-- Color overlay (revealed only by ripple waves) -->
             <img
-              class="media gray base"
+              class="media color base"
               :src="currentSrc"
               alt=""
               aria-hidden="true"
-              ref="baseGrayImg"
+              ref="baseColorImg"
               loading="eager"
               decoding="async"
             />
 
             <div v-if="transitioning" ref="incomingWrap" class="incoming" aria-hidden="true">
-              <img class="media color top" :src="incomingSrc" :alt="incomingAlt" loading="eager" decoding="async" />
-              <img class="media gray top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
+              <img class="media bw top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
+              <img class="media color top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
             </div>
 
             <!-- Pointer halo + ripple rings (visual only) -->
@@ -125,6 +125,42 @@ let lastMoveX = 0
 let lastMoveY = 0
 const rippleEnergy = ref(0)
 
+// Cursor-origin ripples (waves) that reveal color only along the wavefronts.
+type Wave = { x:number; y:number; r:number; a:number; w:number; vr:number }
+let waves: Wave[] = []
+let lastWaveEmit = 0
+let lastTick = 0
+let diagPx = 900
+
+const waveMask = ref('radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%)')
+const waveVis = ref('none')
+const colorO = ref(0)
+
+function ringMask(w: Wave){
+  const r0 = Math.max(0, w.r - w.w)
+  const r1 = w.r + w.w
+  const a = Math.max(0, Math.min(1, w.a))
+  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${r0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${r0.toFixed(1)}px ${r1.toFixed(1)}px, rgba(255,255,255,0) ${r1.toFixed(1)}px 2000px)`
+}
+function ringVis(w: Wave){
+  const r0 = Math.max(0, w.r - w.w)
+  const r1 = w.r + w.w
+  const a = Math.max(0, Math.min(1, w.a)) * 0.18
+  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${r0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${r0.toFixed(1)}px ${r1.toFixed(1)}px, rgba(255,255,255,0) ${r1.toFixed(1)}px 2000px)`
+}
+function recomputeWaveStyles(){
+  if (waves.length === 0){
+    waveMask.value = 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%)'
+    waveVis.value = 'none'
+    colorO.value = 0
+    return
+  }
+  const maxA = waves.reduce((m,w)=>Math.max(m,w.a), 0)
+  colorO.value = Math.min(1, maxA * 1.15)
+  waveMask.value = waves.map(ringMask).join(',')
+  waveVis.value = waves.map(ringVis).join(',')
+}
+
 const turbHover = ref<SVGFETurbulenceElement | null>(null)
 const dispHover = ref<SVGFEDisplacementMapElement | null>(null)
 
@@ -134,7 +170,7 @@ const mediaWrap = ref<HTMLDivElement | null>(null)
 const stackEl = ref<HTMLDivElement | null>(null)
 const incomingWrap = ref<HTMLDivElement | null>(null)
 const baseColorImg = ref<HTMLImageElement | null>(null)
-const baseGrayImg = ref<HTMLImageElement | null>(null)
+const baseBwImg = ref<HTMLImageElement | null>(null)
 const metaEl = ref<HTMLDivElement | null>(null)
 
 function reduce(){
@@ -277,6 +313,7 @@ function setHoverTargetFromEvent(e: PointerEvent){
   const el = mediaWrap.value
   if (!el) return
   const r = el.getBoundingClientRect()
+  diagPx = Math.sqrt(r.width*r.width + r.height*r.height)
   const x = ((e.clientX - r.left) / r.width) * 100
   const y = ((e.clientY - r.top) / r.height) * 100
   thx = Math.max(0, Math.min(100, x))
@@ -285,6 +322,22 @@ function setHoverTargetFromEvent(e: PointerEvent){
 
 function tickHover(){
   hoverRaf = null
+
+  const now = performance.now()
+  const dt = lastTick ? Math.min(48, now - lastTick) : 16
+  lastTick = now
+  const dtS = dt / 1000
+
+  // advance cursor-origin waves
+  if (waves.length){
+    for (const w of waves){
+      w.r += w.vr * dtS
+      w.a = Math.max(0, w.a - dtS * 0.70)
+    }
+    waves = waves.filter(w => w.a > 0.03 && w.r < diagPx * 1.1).slice(-4)
+  }
+  recomputeWaveStyles()
+
   // flowy follow
   const a = hoverActive.value ? 0.16 : 0.10
   hx.value = hx.value + (thx - hx.value) * a
@@ -303,7 +356,7 @@ function tickHover(){
     const fy = baseY + wob * Math.cos(t * 1.1 + hy.value * 0.03)
     turbHover.value.setAttribute('baseFrequency', `${fx.toFixed(4)} ${fy.toFixed(4)}`)
 
-    const scale = (hoverActive.value ? 6 : 0) + rippleEnergy.value * 26
+    const scale = (colorO.value > 0.01 ? 10 : 0) + rippleEnergy.value * 26
     dispHover.value.setAttribute('scale', `${Math.max(0, Math.min(32, scale)).toFixed(2)}`)
   }
 
@@ -316,7 +369,7 @@ function tickHover(){
   }
 
   const near = Math.abs(thx - hx.value) + Math.abs(thy - hy.value) < 0.06
-  if (hoverActive.value || rippleEnergy.value > 0.01 || !near) {
+  if (hoverActive.value || rippleEnergy.value > 0.01 || waves.length > 0 || !near) {
     hoverRaf = requestAnimationFrame(tickHover)
   } else {
     // reset hover ripple filter when idle
@@ -345,6 +398,20 @@ function onMove(e: PointerEvent){
   const dy = e.clientY - lastMoveY
   const v = Math.sqrt(dx*dx + dy*dy) / dt // px/ms
   rippleEnergy.value = Math.min(1.0, rippleEnergy.value + v * 0.9)
+
+  // emit a wave (starts exactly at cursor)
+  if (!reduce()){
+    const since = now - lastWaveEmit
+    if (since > 70 && v > 0.02){
+      lastWaveEmit = now
+      const amp = Math.min(1, 0.20 + v * 0.65)
+      const width = Math.min(36, 7 + v * 22)
+      const speed = Math.min(1800, Math.max(700, v * 1000)) // px/s
+      waves.push({ x: thx, y: thy, r: 0, a: amp, w: width, vr: speed })
+      if (waves.length > 6) waves = waves.slice(-6)
+      recomputeWaveStyles()
+    }
+  }
   lastMoveT = now
   lastMoveX = e.clientX
   lastMoveY = e.clientY
@@ -366,12 +433,15 @@ function onLeave(){
 const hoverStyle = computed(() => ({
   '--mx': `${hx.value}%`,
   '--my': `${hy.value}%`,
-  '--waterO': String(Math.min(0.85, 0.10 + rippleEnergy.value * 0.65))
+  '--waterO': String(Math.min(0.92, colorO.value * 0.95)),
+  '--waveMask': waveMask.value,
+  '--waveVis': waveVis.value,
+  '--colorO': String(colorO.value)
 }))
 
 const imgFxClass = computed(() => {
   if (rippleActive.value) return 'swapRipple'
-  if (hoverActive.value || rippleEnergy.value > 0.01) return 'hoverRipple'
+  if (colorO.value > 0.01 || rippleEnergy.value > 0.01) return 'hoverRipple'
   return ''
 })
 
@@ -420,23 +490,17 @@ onBeforeUnmount(() => {
   display:block;
 }
 
-@property --revealR{
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-
 .imgStack{
   position:absolute;
   inset:0;
   --mx: 50%;
   --my: 50%;
-  --revealR: 0px;
   --waterO: 0;
-  transition: --revealR .18s ease;
+  --colorO: 0;
+  --waveMask: radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%);
+  --waveVis: none;
   will-change: transform;
 }
-.imgStack[data-active="1"]{ --revealR: 120px; }
 
 .media{
   width:100%;
@@ -448,10 +512,14 @@ onBeforeUnmount(() => {
   filter: blur(var(--blur));
 }
 
-/* Default: thumbnails appear black & white via masked grayscale layer */
-.media.gray{ filter: grayscale(1) contrast(1.02) blur(var(--blur));
-  mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my), transparent 0%, transparent 58%, rgba(0,0,0,1) 72%, rgba(0,0,0,1) 100%);
-  -webkit-mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my), transparent 0%, transparent 58%, rgba(0,0,0,1) 72%, rgba(0,0,0,1) 100%);
+/* Default: thumbnails appear black & white via base layer; color only shows on ripple wavefronts */
+.media.bw{
+  filter: grayscale(1) contrast(1.02) blur(var(--blur));
+}
+.media.color{
+  opacity: var(--colorO);
+  mask-image: var(--waveMask);
+  -webkit-mask-image: var(--waveMask);
 }
 .incoming{ position:absolute; inset:0; }
 .media.top{ position:absolute; inset:0; }
@@ -468,9 +536,8 @@ onBeforeUnmount(() => {
   pointer-events:none;
   opacity: var(--waterO);
   mix-blend-mode: overlay;
-  background:
-    radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.12) 0, rgba(255,255,255,0) 52%),
-    repeating-radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.0) 0 10px, rgba(255,255,255,.10) 10px 11px, rgba(255,255,255,.0) 11px 24px);
+  background-image: var(--waveVis);
+  background-repeat: no-repeat;
   filter: blur(0.35px);
 }
 .play{
