@@ -4,7 +4,7 @@
 
     <div class="center">
       <div class="mediaWrap" ref="mediaWrap">
-        <NuxtLink class="mediaLink" :to="`/project/${current.id}`" aria-label="Open project" data-cursor>
+        <NuxtLink class="mediaLink" :to="`/project/${current.id}`" aria-label="Open project" data-cursor-off="1">
           <div
             ref="stackEl"
             class="imgStack"
@@ -41,8 +41,8 @@
               <img class="media color top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
             </div>
 
-            <!-- Pointer halo + ripple rings (visual only) -->
-            <div class="water" aria-hidden="true"></div>
+            <!-- Ripple rings (visual only) -->
+            <div class="ripples" aria-hidden="true"></div>
           </div>
         </NuxtLink>
         <a class="play" :href="current.link" target="_blank" rel="noreferrer" data-cursor>( OPEN )</a>
@@ -324,28 +324,35 @@ function setHoverTargetFromEvent(e: PointerEvent){
 }
 
 function tickHover(){
-  hoverRaf = null
-
   const now = performance.now()
   const dt = lastTick ? Math.min(48, now - lastTick) : 16
   lastTick = now
   const dtS = dt / 1000
 
-  // advance cursor-origin waves
+  // advance cursor-origin waves (water rings)
   if (waves.length){
     for (const w of waves){
       w.r += w.vr * dtS
       w.a = Math.max(0, w.a - dtS * 0.42)
     }
-    waves = waves.filter(w => w.a > 0.02 && w.r < diagPx * 1.25).slice(-6)
+    // keep a handful of recent rings for performance
+    waves = waves.filter(w => w.a > 0.02 && w.r < diagPx * 1.25).slice(-8)
   }
   recomputeWaveStyles()
 
-  // flowy follow
-  const a = hoverActive.value ? 0.16 : 0.10
+  // flowy follow (same feel as the About portrait)
+  const a = hoverActive.value ? 0.18 : 0.12
   hx.value = hx.value + (thx - hx.value) * a
   hy.value = hy.value + (thy - hy.value) * a
 
+  const near = Math.abs(thx - hx.value) + Math.abs(thy - hy.value) < 0.08
+  const keep = !reduce() && (hoverActive.value || waves.length > 0 || !near)
+
+  if (keep){
+    hoverRaf = requestAnimationFrame(tickHover)
+  } else {
+    hoverRaf = null
+  }
 }
 
 function onEnter(e: PointerEvent){
@@ -402,7 +409,7 @@ function onLeave(){
 const hoverStyle = computed(() => ({
   '--mx': `${hx.value}%`,
   '--my': `${hy.value}%`,
-  '--waterO': String(Math.min(0.92, colorO.value * 0.95)),
+  '--ripO': String(Math.min(0.55, colorO.value * 0.55)),
   '--waveMask': waveMask.value,
   '--waveVis': waveVis.value,
   '--colorO': String(colorO.value)
@@ -462,7 +469,7 @@ onBeforeUnmount(() => {
   inset:0;
   --mx: 50%;
   --my: 50%;
-  --waterO: 0;
+  --ripO: 0;
   --colorO: 0;
   --waveMask: radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%);
   --waveVis: none;
@@ -495,12 +502,12 @@ onBeforeUnmount(() => {
 .imgStack.swapRipple{ filter: url(#rippleFilter); }
 
 
-.water{
+.ripples{
   position:absolute;
   inset:0;
   pointer-events:none;
-  opacity: var(--waterO);
-  mix-blend-mode: overlay;
+  opacity: var(--ripO);
+  mix-blend-mode: normal;
   background-image: var(--waveVis);
   background-repeat: no-repeat;
   filter: blur(0.35px);

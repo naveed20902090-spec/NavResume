@@ -31,6 +31,8 @@ onMounted(() => {
   const onOver = (e: Event) => {
     const t = e.target as HTMLElement | null
     if (!t) return
+    // Allow specific regions to opt out of the cursor enlarging.
+    if (t.closest('[data-cursor-off]')) return
     if (t.closest('a,button,[data-cursor]')){
       gsap.to(el, { scale: 2.2, opacity: 0.18, duration: prefersReduce() ? 0 : 0.18, ease: 'power2.out' })
     }
@@ -39,6 +41,7 @@ onMounted(() => {
   const onOut = (e: Event) => {
     const t = e.target as HTMLElement | null
     if (!t) return
+    if (t.closest('[data-cursor-off]')) return
     if (t.closest('a,button,[data-cursor]')){
       gsap.to(el, { scale: 1, opacity: 0.12, duration: prefersReduce() ? 0 : 0.18, ease: 'power2.out' })
     }
