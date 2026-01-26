@@ -3,7 +3,11 @@
     <ArcNav side="left" :activeArc="activeArc" :label="prevLabel" @activate="prev" />
 
     <div class="center">
-      <div class="mediaWrap" ref="mediaWrap">
+      <div class="mediaWrap" ref="mediaWrap"
+        @pointerenter="onEnter"
+        @pointermove="onMove"
+        @pointerleave="onLeave"
+      >
         <NuxtLink class="mediaLink" :to="`/project/${current.id}`" aria-label="Open project" data-cursor-off="1">
           <div
             ref="stackEl"
@@ -11,9 +15,6 @@
             :class="imgFxClass"
             :data-active="hoverActive ? '1' : '0'"
             :style="hoverStyle"
-            @pointerenter="onEnter"
-            @pointermove="onMove"
-            @pointerleave="onLeave"
           >
             <!-- B&W base (always visible) -->
             <img
@@ -117,6 +118,7 @@ let hoverRaf: number | null = null
 let lastMoveT = 0
 let lastMoveX = 0
 let lastMoveY = 0
+let vSmooth = 0
 
 // Cursor-origin ripples (waves) that reveal color only along the wavefronts.
 type Wave = { x:number; y:number; r:number; a:number; w:number; vr:number }
@@ -132,21 +134,21 @@ const colorO = ref(0)
 function ringMask(w: Wave){
   const r0 = Math.max(0, w.r - w.w)
   const r1 = w.r + w.w
-  const f = Math.min(16, Math.max(7, w.w * 0.58))
+  const f = Math.min(22, Math.max(12, w.w * 0.75))
   const a = Math.max(0, Math.min(1, w.a))
   const s0 = Math.max(0, r0 - f)
   const s1 = r0
   const s2 = r1
   const s3 = r1 + f
   // Amplify mask opacity so the color read is obvious (still decays with wave alpha).
-  const alpha = Math.min(1, a * 2.8)
+  const alpha = Math.min(1, a * 2.0)
   return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${s0.toFixed(1)}px, rgba(255,255,255,${alpha.toFixed(3)}) ${s1.toFixed(1)}px ${s2.toFixed(1)}px, rgba(255,255,255,0) ${s3.toFixed(1)}px 2000px)`
 }
 function ringVis(w: Wave){
   const r0 = Math.max(0, w.r - w.w)
   const r1 = w.r + w.w
-  const f = Math.min(20, Math.max(9, w.w * 0.62))
-  const a = Math.max(0, Math.min(1, w.a)) * 0.22
+  const f = Math.min(26, Math.max(14, w.w * 0.78))
+  const a = Math.max(0, Math.min(1, w.a)) * 0.16
   const s0 = Math.max(0, r0 - f)
   const s1 = r0
   const s2 = r1
@@ -161,7 +163,7 @@ function recomputeWaveStyles(){
     return
   }
   const maxA = waves.reduce((m,w)=>Math.max(m,w.a), 0)
-  colorO.value = Math.min(1, maxA * 1.15)
+  colorO.value = Math.min(1, maxA * 0.95)
   waveMask.value = waves.map(ringMask).join(',')
   waveVis.value = waves.map(ringVis).join(',')
 }
@@ -333,7 +335,7 @@ function tickHover(){
   if (waves.length){
     for (const w of waves){
       w.r += w.vr * dtS
-      w.a = Math.max(0, w.a - dtS * 0.42)
+      w.a = Math.max(0, w.a - dtS * 0.28)
     }
     // keep a handful of recent rings for performance
     waves = waves.filter(w => w.a > 0.02 && w.r < diagPx * 1.25).slice(-8)
@@ -362,6 +364,14 @@ function onEnter(e: PointerEvent){
   lastMoveT = performance.now()
   lastMoveX = e.clientX
   lastMoveY = e.clientY
+  vSmooth = 0
+
+  // Seed a gentle first wave so the effect is visible immediately on hover.
+  if (!reduce()){
+    waves.push({ x: thx, y: thy, r: 0, a: 0.18, w: 26, vr: 760 })
+    if (waves.length > 8) waves = waves.slice(-8)
+    recomputeWaveStyles()
+  }
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
@@ -374,18 +384,18 @@ function onMove(e: PointerEvent){
   const dx = e.clientX - lastMoveX
   const dy = e.clientY - lastMoveY
   const v = Math.sqrt(dx*dx + dy*dy) / dt // px/ms
-
+  vSmooth = vSmooth * 0.82 + v * 0.18
 
   // emit a wave (starts exactly at cursor)
   if (!reduce()){
     const since = now - lastWaveEmit
-    const moved = (Math.abs(dx) + Math.abs(dy)) > 0.6
-    if (since > 55 && moved){
+    const moved = (Math.abs(dx) + Math.abs(dy)) > 0.25
+    if (since > 90 && moved){
       lastWaveEmit = now
-      // Ensure slow movement still produces a visible ripple + color reveal.
-      const amp = Math.max(0.14, Math.min(0.95, 0.20 + v * 1.25))
-      const width = Math.max(11, Math.min(46, 12 + v * 46))
-      const speed = Math.max(850, Math.min(2000, 850 + v * 4500)) // px/s
+      // Flowy: softer rings, longer-lived, less aggressive at high speed.
+      const amp = Math.max(0.10, Math.min(0.55, 0.14 + vSmooth * 0.90))
+      const width = Math.max(18, Math.min(44, 24 + vSmooth * 34))
+      const speed = Math.max(520, Math.min(1200, 640 + vSmooth * 2600)) // px/s
       waves.push({ x: thx, y: thy, r: 0, a: amp, w: width, vr: speed })
       if (waves.length > 8) waves = waves.slice(-8)
       recomputeWaveStyles()
@@ -409,7 +419,7 @@ function onLeave(){
 const hoverStyle = computed(() => ({
   '--mx': `${hx.value}%`,
   '--my': `${hy.value}%`,
-  '--ripO': String(Math.min(0.55, colorO.value * 0.55)),
+  '--ripO': String(Math.min(0.26, colorO.value * 0.26)),
   '--waveMask': waveMask.value,
   '--waveVis': waveVis.value,
   '--colorO': String(colorO.value)
