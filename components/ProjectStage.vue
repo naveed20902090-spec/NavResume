@@ -53,12 +53,6 @@
             <feTurbulence ref="turb" type="turbulence" baseFrequency="0.012 0.014" numOctaves="1" seed="2" result="noise" />
             <feDisplacementMap ref="disp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
           </filter>
-
-          <!-- Hover ripple (subtle water distortion under cursor motion) -->
-          <filter id="hoverRippleFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence ref="turbHover" type="turbulence" baseFrequency="0.010 0.012" numOctaves="1" seed="7" result="noise2" />
-            <feDisplacementMap ref="dispHover" in="SourceGraphic" in2="noise2" scale="0" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
         </svg>
       </div>
 
@@ -123,7 +117,6 @@ let hoverRaf: number | null = null
 let lastMoveT = 0
 let lastMoveX = 0
 let lastMoveY = 0
-const rippleEnergy = ref(0)
 
 // Cursor-origin ripples (waves) that reveal color only along the wavefronts.
 type Wave = { x:number; y:number; r:number; a:number; w:number; vr:number }
@@ -173,8 +166,6 @@ function recomputeWaveStyles(){
   waveVis.value = waves.map(ringVis).join(',')
 }
 
-const turbHover = ref<SVGFETurbulenceElement | null>(null)
-const dispHover = ref<SVGFEDisplacementMapElement | null>(null)
 
 const activeArc = ref(1)
 
@@ -344,9 +335,9 @@ function tickHover(){
   if (waves.length){
     for (const w of waves){
       w.r += w.vr * dtS
-      w.a = Math.max(0, w.a - dtS * 0.70)
+      w.a = Math.max(0, w.a - dtS * 0.42)
     }
-    waves = waves.filter(w => w.a > 0.03 && w.r < diagPx * 1.1).slice(-4)
+    waves = waves.filter(w => w.a > 0.02 && w.r < diagPx * 1.25).slice(-6)
   }
   recomputeWaveStyles()
 
@@ -355,39 +346,6 @@ function tickHover(){
   hx.value = hx.value + (thx - hx.value) * a
   hy.value = hy.value + (thy - hy.value) * a
 
-  // decay ripple energy
-  // Fast decay so there is no distortion when the pointer is stationary.
-  rippleEnergy.value = Math.max(0, rippleEnergy.value * 0.86 - 0.015)
-
-  // drive subtle displacement while hovering / moving
-  if (process.client && !reduce() && turbHover.value && dispHover.value) {
-    const t = performance.now() * 0.001
-    const baseX = 0.010
-    const baseY = 0.012
-    const wob = 0.0032
-    const fx = baseX + wob * Math.sin(t * 1.4 + hx.value * 0.03)
-    const fy = baseY + wob * Math.cos(t * 1.1 + hy.value * 0.03)
-    turbHover.value.setAttribute('baseFrequency', `${fx.toFixed(4)} ${fy.toFixed(4)}`)
-
-    const scale = rippleEnergy.value * 28
-    dispHover.value.setAttribute('scale', `${Math.max(0, Math.min(32, scale)).toFixed(2)}`)
-  }
-
-  // parallax (very subtle)
-  if (process.client && stackEl.value && mediaWrap.value && hoverActive.value && !reduce()) {
-    const r = mediaWrap.value.getBoundingClientRect()
-    const dx = (hx.value / 100 - 0.5)
-    const dy = (hy.value / 100 - 0.5)
-    gsap.to(stackEl.value, { x: dx * 10, y: dy * 6, duration: 0.35, ease: 'power3.out' })
-  }
-
-  const near = Math.abs(thx - hx.value) + Math.abs(thy - hy.value) < 0.06
-  if (hoverActive.value || rippleEnergy.value > 0.01 || waves.length > 0 || !near) {
-    hoverRaf = requestAnimationFrame(tickHover)
-  } else {
-    // reset hover ripple filter when idle
-    try{ dispHover.value?.setAttribute('scale', '0') } catch {}
-  }
 }
 
 function onEnter(e: PointerEvent){
@@ -404,24 +362,25 @@ function onMove(e: PointerEvent){
   if (!hoverActive.value || !finePointer()) return
   setHoverTargetFromEvent(e)
 
-  // ripple impulse from mouse speed
   const now = performance.now()
   const dt = Math.max(16, now - lastMoveT)
   const dx = e.clientX - lastMoveX
   const dy = e.clientY - lastMoveY
   const v = Math.sqrt(dx*dx + dy*dy) / dt // px/ms
-  rippleEnergy.value = Math.min(1.0, rippleEnergy.value + v * 0.9)
+
 
   // emit a wave (starts exactly at cursor)
   if (!reduce()){
     const since = now - lastWaveEmit
-    if (since > 70 && v > 0.02){
+    const moved = (Math.abs(dx) + Math.abs(dy)) > 0.6
+    if (since > 55 && moved){
       lastWaveEmit = now
-      const amp = Math.min(1, 0.20 + v * 0.65)
-      const width = Math.min(36, 7 + v * 22)
-      const speed = Math.min(1800, Math.max(700, v * 1000)) // px/s
+      // Ensure slow movement still produces a visible ripple + color reveal.
+      const amp = Math.max(0.14, Math.min(0.95, 0.20 + v * 1.25))
+      const width = Math.max(11, Math.min(46, 12 + v * 46))
+      const speed = Math.max(850, Math.min(2000, 850 + v * 4500)) // px/s
       waves.push({ x: thx, y: thy, r: 0, a: amp, w: width, vr: speed })
-      if (waves.length > 6) waves = waves.slice(-6)
+      if (waves.length > 8) waves = waves.slice(-8)
       recomputeWaveStyles()
     }
   }
@@ -437,9 +396,6 @@ function onLeave(){
   // ease back to center
   thx = 50
   thy = 50
-  if (process.client && stackEl.value && !reduce()) {
-    gsap.to(stackEl.value, { x: 0, y: 0, duration: 0.55, ease: 'power3.out' })
-  }
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
@@ -454,8 +410,6 @@ const hoverStyle = computed(() => ({
 
 const imgFxClass = computed(() => {
   if (rippleActive.value) return 'swapRipple'
-  // Apply the distortion filter only while the pointer is moving.
-  if (rippleEnergy.value > 0.02) return 'hoverRipple'
   return ''
 })
 
@@ -468,7 +422,6 @@ onBeforeUnmount(() => {
   if (hoverRaf) cancelAnimationFrame(hoverRaf)
   hoverRaf = null
   hoverActive.value = false
-  try{ dispHover.value?.setAttribute('scale', '0') } catch { /* ignore */ }
 })
 </script>
 
@@ -541,8 +494,6 @@ onBeforeUnmount(() => {
 /* Swap ripple distortion during project change (applied on the stack so grayscale stays intact) */
 .imgStack.swapRipple{ filter: url(#rippleFilter); }
 
-/* Hover ripple distortion */
-.imgStack.hoverRipple{ filter: url(#hoverRippleFilter); }
 
 .water{
   position:absolute;
