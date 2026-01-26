@@ -139,14 +139,26 @@ const colorO = ref(0)
 function ringMask(w: Wave){
   const r0 = Math.max(0, w.r - w.w)
   const r1 = w.r + w.w
+  const f = Math.min(16, Math.max(7, w.w * 0.58))
   const a = Math.max(0, Math.min(1, w.a))
-  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${r0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${r0.toFixed(1)}px ${r1.toFixed(1)}px, rgba(255,255,255,0) ${r1.toFixed(1)}px 2000px)`
+  const s0 = Math.max(0, r0 - f)
+  const s1 = r0
+  const s2 = r1
+  const s3 = r1 + f
+  // Amplify mask opacity so the color read is obvious (still decays with wave alpha).
+  const alpha = Math.min(1, a * 2.8)
+  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${s0.toFixed(1)}px, rgba(255,255,255,${alpha.toFixed(3)}) ${s1.toFixed(1)}px ${s2.toFixed(1)}px, rgba(255,255,255,0) ${s3.toFixed(1)}px 2000px)`
 }
 function ringVis(w: Wave){
   const r0 = Math.max(0, w.r - w.w)
   const r1 = w.r + w.w
-  const a = Math.max(0, Math.min(1, w.a)) * 0.18
-  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${r0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${r0.toFixed(1)}px ${r1.toFixed(1)}px, rgba(255,255,255,0) ${r1.toFixed(1)}px 2000px)`
+  const f = Math.min(20, Math.max(9, w.w * 0.62))
+  const a = Math.max(0, Math.min(1, w.a)) * 0.22
+  const s0 = Math.max(0, r0 - f)
+  const s1 = r0
+  const s2 = r1
+  const s3 = r1 + f
+  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${s0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${s1.toFixed(1)}px ${s2.toFixed(1)}px, rgba(255,255,255,0) ${s3.toFixed(1)}px 2000px)`
 }
 function recomputeWaveStyles(){
   if (waves.length === 0){
@@ -344,7 +356,8 @@ function tickHover(){
   hy.value = hy.value + (thy - hy.value) * a
 
   // decay ripple energy
-  rippleEnergy.value = Math.max(0, rippleEnergy.value * 0.92 - 0.002)
+  // Fast decay so there is no distortion when the pointer is stationary.
+  rippleEnergy.value = Math.max(0, rippleEnergy.value * 0.86 - 0.015)
 
   // drive subtle displacement while hovering / moving
   if (process.client && !reduce() && turbHover.value && dispHover.value) {
@@ -356,7 +369,7 @@ function tickHover(){
     const fy = baseY + wob * Math.cos(t * 1.1 + hy.value * 0.03)
     turbHover.value.setAttribute('baseFrequency', `${fx.toFixed(4)} ${fy.toFixed(4)}`)
 
-    const scale = (colorO.value > 0.01 ? 10 : 0) + rippleEnergy.value * 26
+    const scale = rippleEnergy.value * 28
     dispHover.value.setAttribute('scale', `${Math.max(0, Math.min(32, scale)).toFixed(2)}`)
   }
 
@@ -441,7 +454,8 @@ const hoverStyle = computed(() => ({
 
 const imgFxClass = computed(() => {
   if (rippleActive.value) return 'swapRipple'
-  if (colorO.value > 0.01 || rippleEnergy.value > 0.01) return 'hoverRipple'
+  // Apply the distortion filter only while the pointer is moving.
+  if (rippleEnergy.value > 0.02) return 'hoverRipple'
   return ''
 })
 
@@ -517,7 +531,7 @@ onBeforeUnmount(() => {
   filter: grayscale(1) contrast(1.02) blur(var(--blur));
 }
 .media.color{
-  opacity: var(--colorO);
+  opacity: 1;
   mask-image: var(--waveMask);
   -webkit-mask-image: var(--waveMask);
 }
