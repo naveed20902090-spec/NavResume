@@ -235,9 +235,9 @@ function enterListing(el: Element, done: () => void){
   gsap.set(inner, { y: 18, opacity: 0, scale: 0.99 })
 
   const tl = gsap.timeline({ onComplete: done, defaults: { ease: 'power3.out' } })
-  tl.to(el, { opacity: 1, duration: 0.18 }, 0)
-    .to(inner, { y: 0, opacity: 1, scale: 1, duration: 0.38 }, 0.06)
-    .fromTo(rows, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, stagger: 0.04 }, 0.14)
+  tl.to(el, { opacity: 1, duration: 0.22 }, 0)
+    .to(inner, { y: 0, opacity: 1, scale: 1, duration: 0.52 }, 0.08)
+    .fromTo(rows, { y: 10, opacity: 0, filter: 'blur(2px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.38, stagger: 0.045, clearProps: 'filter' }, 0.20)
 }
 
 function leaveListing(el: Element, done: () => void){
@@ -247,8 +247,8 @@ function leaveListing(el: Element, done: () => void){
   }
   const inner = (el as HTMLElement).querySelector('.listingInner')
   const tl = gsap.timeline({ onComplete: done, defaults: { ease: 'power3.inOut' } })
-  tl.to(inner, { y: 10, opacity: 0, scale: 0.99, duration: 0.22 }, 0)
-    .to(el, { opacity: 0, duration: 0.22 }, 0)
+  tl.to(inner, { y: 14, opacity: 0, scale: 0.99, duration: 0.30, filter: 'blur(2px)', clearProps: 'filter' }, 0)
+    .to(el, { opacity: 0, duration: 0.26 }, 0.02)
 }
 </script>
 

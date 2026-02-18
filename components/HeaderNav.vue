@@ -67,6 +67,14 @@ const stack = ref<HTMLElement | null>(null)
 const bL = ref<HTMLElement | null>(null)
 const bR = ref<HTMLElement | null>(null)
 
+// quickTo setters (tighter, premium nav feel)
+let qxL: ((v:number)=>void) | null = null
+let qyL: ((v:number)=>void) | null = null
+let qsL: ((v:number)=>void) | null = null
+let qxR: ((v:number)=>void) | null = null
+let qyR: ((v:number)=>void) | null = null
+let qsR: ((v:number)=>void) | null = null
+
 const refs = new Map<Key, HTMLElement>()
 
 function setItemRef(el: HTMLElement | null, key: Key){
@@ -97,15 +105,13 @@ function moveBracketTo(key: Key, scale = 1){
   const leftX = (itemRect.left - stackRect.left) - xPad
   const rightX = (itemRect.right - stackRect.left) + xPad
 
-  gsap.killTweensOf([bL.value, bR.value])
-
   // Anchor left bracket from its left edge; right bracket from its right edge.
-  gsap.set(bL.value, { xPercent: 0 })
-  gsap.set(bR.value, { xPercent: -100 })
+  gsap.set(bL.value, { xPercent: 0, display: 'block' })
+  gsap.set(bR.value, { xPercent: -100, display: 'block' })
 
-  gsap.set([bL.value, bR.value], { display: 'block' })
-  gsap.to(bL.value, { x: leftX, y, scale, duration: 0.22, ease: 'power3.out' })
-  gsap.to(bR.value, { x: rightX, y, scale, duration: 0.22, ease: 'power3.out' })
+  // Use quickTo for tighter, premium response (less "tween pile-up").
+  qxL?.(leftX); qyL?.(y); qsL?.(scale)
+  qxR?.(rightX); qyR?.(y); qsR?.(scale)
 }
 
 
@@ -129,6 +135,18 @@ function emitNav(key: Key){
 }
 
 onMounted(() => {
+  if (!process.client || !bL.value || !bR.value) return
+
+  // Build quickTo setters once.
+  const cfg = { duration: 0.28, ease: 'power3.out', overwrite: 'auto' as const }
+  qxL = gsap.quickTo(bL.value, 'x', cfg)
+  qyL = gsap.quickTo(bL.value, 'y', cfg)
+  qsL = gsap.quickTo(bL.value, 'scale', { duration: 0.22, ease: 'power3.out', overwrite: 'auto' })
+
+  qxR = gsap.quickTo(bR.value, 'x', cfg)
+  qyR = gsap.quickTo(bR.value, 'y', cfg)
+  qsR = gsap.quickTo(bR.value, 'scale', { duration: 0.22, ease: 'power3.out', overwrite: 'auto' })
+
   nextTick(() => moveBracketTo(activeKey.value, 1))
 })
 

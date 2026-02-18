@@ -8,6 +8,8 @@
 import gsap from 'gsap'
 import { useSfx } from '~/composables/useSfx'
 
+const route = useRoute()
+
 const layer = ref<HTMLElement | null>(null)
 const { playWhoosh } = useSfx()
 
@@ -39,19 +41,21 @@ function animateReveals(root: HTMLElement){
   const titles = items.filter(el => el.classList.contains('title'))
   const rest = items.filter(el => !el.classList.contains('title'))
 
+  const aboutSlow = route.path.startsWith('/about')
+
   // Typography-first reveal for titles (museum vibe).
   if (titles.length){
     gsap.fromTo(titles,
-      { opacity: 0, y: 14, filter: 'blur(6px)', letterSpacing: '0.22em' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', letterSpacing: '', duration: 0.85, ease: 'power3.out', stagger: 0.08, clearProps: 'transform,filter,letter-spacing' }
+      { opacity: 0, y: 14, filter: 'blur(7px)', letterSpacing: '0.24em' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', letterSpacing: '', duration: aboutSlow ? 1.15 : 0.88, ease: 'power3.out', stagger: aboutSlow ? 0.11 : 0.08, clearProps: 'transform,filter,letter-spacing' }
     )
   }
 
   // Clean reveal for everything else.
   if (rest.length){
     gsap.fromTo(rest,
-      { opacity: 0, y: 12, filter: 'blur(2px)' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.62, ease: 'power3.out', stagger: 0.055, clearProps: 'transform,filter' }
+      { opacity: 0, y: 12, filter: 'blur(2.5px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: aboutSlow ? 0.82 : 0.62, ease: 'power3.out', stagger: aboutSlow ? 0.075 : 0.055, clearProps: 'transform,filter' }
     )
   }
 }

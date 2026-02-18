@@ -215,11 +215,12 @@ function transitionToMedia(src: string, alt: string){
 
     gsap.killTweensOf([stack, inc, wrap])
 
-    // Subtle water-ripple distortion during the swap.
-    runRipple(1050)
+    // Premium swap: slight lens compression + clean wipe + micro blur.
+    runRipple(980)
 
-    gsap.set(inc, { clipPath: 'inset(0 0 0 100%)', '--blur': '2px', scale: 1.02 })
-    gsap.set(stack, { '--blur': '0px', scale: 1 })
+    gsap.set(wrap, { willChange: 'transform' })
+    gsap.set(inc, { clipPath: 'inset(0 0 0 100%)', '--blur': '2.5px', scale: 1.03, opacity: 1 })
+    gsap.set(stack, { '--blur': '0px', scale: 1, opacity: 1 })
 
     const tl = gsap.timeline({
       defaults: { ease: 'power3.inOut' },
@@ -227,15 +228,16 @@ function transitionToMedia(src: string, alt: string){
         currentSrc.value = src
         currentAlt.value = alt
         transitioning.value = false
-        gsap.set(stack, { '--blur': '0px', scale: 1 })
+        gsap.set(stack, { '--blur': '0px', scale: 1, opacity: 1 })
+        gsap.set(wrap, { clearProps: 'will-change' })
       }
     })
 
-    tl.to(wrap, { duration: 0.22, scale: 0.992 }, 0)
-      .to(stack, { duration: 0.22, '--blur': '1.5px', scale: 1.01, opacity: 0.7 }, 0)
-      .to(inc, { duration: 0.46, clipPath: 'inset(0 0 0 0)', '--blur': '0px', scale: 1, opacity: 1 }, 0.06)
-      .to(wrap, { duration: 0.48, scale: 1 }, 0.10)
-      .to(stack, { duration: 0.48, '--blur': '0px', opacity: 1, scale: 1 }, 0.10)
+    tl.to(wrap, { duration: 0.28, scale: 0.988 }, 0)
+      .to(stack, { duration: 0.28, '--blur': '2px', scale: 1.01, opacity: 0.62 }, 0)
+      .to(inc, { duration: 0.62, clipPath: 'inset(0 0 0 0)', '--blur': '0px', scale: 1, opacity: 1 }, 0.08)
+      .to(wrap, { duration: 0.62, scale: 1 }, 0.12)
+      .to(stack, { duration: 0.62, '--blur': '0px', opacity: 1, scale: 1 }, 0.12)
   })
 }
 
