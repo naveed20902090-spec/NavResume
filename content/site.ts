@@ -25,11 +25,29 @@ export const site = {
     workflow: ["Reference alignment (style + intensity)", "First pass: story + timing", "Second: sound design + polish", "Final: finishing + exports"]
   },
   services: {
+    // Upwork-friendly: quick scan, clear outcomes.
     plaques: [
       "CINEMATIC MONTAGES",
       "ARCHITECTURAL / BRAND SHOWCASES",
       "PODCASTS & INTERVIEWS",
       "SHORTS / REELS PACKAGES"
+    ],
+    packages: [
+      {
+        title: "STARTER",
+        desc: "One video, clean structure, premium sound polish.",
+        bullets: ["Story + pacing pass", "Sound design accents + mix", "1 revision round"],
+      },
+      {
+        title: "RETENTION",
+        desc: "Built to hold attention: tighter timing, stronger escalation.",
+        bullets: ["Hook + structure", "Sound-led transitions", "2 revision rounds"],
+      },
+      {
+        title: "SYSTEM",
+        desc: "For ongoing creators: consistent output and fast turnaround.",
+        bullets: ["Batch workflow", "Versioned deliveries", "Priority scheduling"],
+      }
     ],
     items: [
       {

@@ -19,6 +19,17 @@
         </div>
       </div>
 
+      <div class="k" style="margin-top:6px;" data-reveal>( PACKAGES )</div>
+      <div class="gridP" data-reveal>
+        <div v-for="p in site.services.packages" :key="p.title" class="card">
+          <div class="k">{{ p.title }}</div>
+          <p class="p">{{ p.desc }}</p>
+          <ul class="ul">
+            <li v-for="b in p.bullets" :key="b" class="p">{{ b }}</li>
+          </ul>
+        </div>
+      </div>
+
       <div class="grid">
         <div v-for="it in site.services.items" :key="it.title" class="card">
           <div class="k">{{ it.title }}</div>
@@ -114,7 +125,14 @@ onBeforeUnmount(() => {
   padding: 14px 16px;
   background: color-mix(in srgb, var(--bg) 70%, transparent);
 }
+.gridP{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 14px;
+}
 .grid{
+  margin-top: 14px;
   display:grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 14px;
@@ -141,6 +159,7 @@ onBeforeUnmount(() => {
 .ul{ margin:10px 0 0; padding-left: 16px; }
 .cta{ margin-top: 14px; display:flex; flex-wrap:wrap; gap: 14px; }
 @media (max-width: 1024px){
+  .gridP{ grid-template-columns: 1fr; }
   .grid{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
   .plaqueGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }

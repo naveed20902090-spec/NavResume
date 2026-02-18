@@ -35,6 +35,16 @@
               </ul>
             </div>
           </div>
+
+          <div class="panel" data-reveal style="margin-top:14px;">
+            <div class="k">WORKING WITH ME</div>
+            <p class="p">Fast, structured, and easy to manage. You’ll always know what’s next, what I need, and when you’ll get the next version.</p>
+            <ul class="ul">
+              <li class="p li">Communication: quick updates, clear questions, no fluff</li>
+              <li class="p li">Revisions: focused iteration (keep scope clean, improve what matters)</li>
+              <li class="p li">Delivery: versioned exports + notes, platform-ready formats</li>
+            </ul>
+          </div>
         </div>
 
         <aside class="rightCol">

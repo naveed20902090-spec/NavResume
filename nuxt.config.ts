@@ -7,12 +7,15 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'description', content: "Story-first video editor for cinematic montages, architectural/brand showcases, vlogs, podcasts & retention-first short-form." },
+        { name: 'robots', content: 'index, follow' },
         { property: 'og:title', content: "Tauseef Rahman (NAV) — Cinematic Video Editor" },
         { property: 'og:description', content: "Cinematic, retention-first video editing: gaming montages, architectural showcases, long-form and short-form." },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://navresume.vercel.app' },
-        { property: 'og:image', content: 'https://i.ytimg.com/vi/6k_Esgfw57k/hqdefault.jpg' },
+        // NOTE: OpenGraph image should be an absolute URL for best compatibility.
+        { property: 'og:image', content: 'https://navresume.vercel.app/og.svg' },
         { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: 'https://navresume.vercel.app/og.svg' },
       ],
       link: [
         // Replace with the exact font once known; this is a close visual surrogate.
