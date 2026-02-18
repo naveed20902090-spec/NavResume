@@ -2,8 +2,9 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 
 export default defineNuxtPlugin(() => {
-  // Respect reduced motion
+  // Desktop-only: avoid fighting native scroll on touch/coarse pointers.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
 
   const lenis = new Lenis({
     duration: 1.05,
