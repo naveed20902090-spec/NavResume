@@ -23,21 +23,21 @@
 }
 
 html[data-theme="light"]{
-  /* Light mode: keep it slightly warm so lines/readability stay premium */
-  --bg:#f8f8f6;
-  --fg:#0b0b0b;
-  --muted:rgba(0,0,0,.72);
-  --muted2:rgba(0,0,0,.58);
-  --line:rgba(0,0,0,.20);
+  /* Light mode: maximize readability (thin mono needs more contrast). */
+  --bg:#ffffff;
+  --fg:#000000;
+  --muted:rgba(0,0,0,.86);
+  --muted2:rgba(0,0,0,.72);
+  --line:rgba(0,0,0,.32);
   --bar: rgba(0,0,0,.00);
 
-  /* Premium layer (light): much softer shadows/glow to avoid haze */
-  --glow: rgba(0,0,0,.045);
-  --glow2: rgba(0,0,0,.03);
-  --strokeHi: rgba(0,0,0,.24);
-  --strokeLo: rgba(0,0,0,.12);
+  /* Premium layer (light): keep it crisp (almost no glow). */
+  --glow: rgba(0,0,0,.02);
+  --glow2: rgba(0,0,0,.015);
+  --strokeHi: rgba(0,0,0,.38);
+  --strokeLo: rgba(0,0,0,.22);
 
-  /* Disable grain in light mode (it can feel washed/dusty fast). */
+  /* Disable grain in light mode (avoid haze). */
   --grain: none;
 }
 
