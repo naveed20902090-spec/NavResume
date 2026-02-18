@@ -23,23 +23,22 @@
 }
 
 html[data-theme="light"]{
-  /* "Light" mode fallback: keep the same premium charcoal palette.
-     Some browsers/extensions render our light palette as washed-out.
-     This keeps readability consistent while still allowing a toggle. */
-  --bg:#0b0b0b;
-  --fg:#f6f6f6;
-  --muted:rgba(255,255,255,.44);
-  --muted2:rgba(255,255,255,.26);
-  --line:rgba(255,255,255,.14);
-  --bar: rgba(255,255,255,.00);
+  /* Light mode: maximize readability (thin mono needs more contrast). */
+  --bg:#ffffff;
+  --fg:#000000;
+  --muted:rgba(0,0,0,.86);
+  --muted2:rgba(0,0,0,.72);
+  --line:rgba(0,0,0,.32);
+  --bar: rgba(0,0,0,.00);
 
-  --glow: rgba(255,255,255,.10);
-  --glow2: rgba(255,255,255,.06);
-  --strokeHi: rgba(255,255,255,.22);
-  --strokeLo: rgba(255,255,255,.12);
+  /* Premium layer (light): keep it crisp (almost no glow). */
+  --glow: rgba(0,0,0,.02);
+  --glow2: rgba(0,0,0,.015);
+  --strokeHi: rgba(0,0,0,.38);
+  --strokeLo: rgba(0,0,0,.22);
 
-  /* Grain is OK on dark. */
-  --grain: url('/grain.svg');
+  /* Disable grain in light mode (avoid haze). */
+  --grain: none;
 }
 
 *{ box-sizing:border-box; }
@@ -70,8 +69,8 @@ body::before{
 
 /* Light mode tuning: prevent "white wash" from overlay blending. */
 html[data-theme="light"] body::before{
-  opacity: .22;
-  mix-blend-mode: overlay;
+  opacity: 0;
+  mix-blend-mode: normal;
 }
 
 /* Keep app content above grain. */
