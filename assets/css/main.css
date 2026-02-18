@@ -88,6 +88,74 @@ button.link:hover,
     0 0 18px var(--glow);
 }
 
+/* Specular sweep (Museum Luxury) */
+.ctaBtn,
+.pill,
+a.link.ctaBtn,
+button.link{
+  position: relative;
+  overflow: hidden;
+}
+.ctaBtn::after,
+.pill::after,
+button.link::after{
+  content:"";
+  position:absolute;
+  inset:-40% -20%;
+  background: linear-gradient(110deg,
+    transparent 0%,
+    rgba(255,255,255,0.00) 35%,
+    rgba(255,255,255,0.14) 50%,
+    rgba(255,255,255,0.00) 65%,
+    transparent 100%
+  );
+  transform: translateX(-120%) skewX(-12deg);
+  opacity: 0;
+  pointer-events:none;
+}
+html[data-theme="light"] .ctaBtn::after,
+html[data-theme="light"] .pill::after,
+html[data-theme="light"] button.link::after{
+  background: linear-gradient(110deg,
+    transparent 0%,
+    rgba(0,0,0,0.00) 35%,
+    rgba(0,0,0,0.12) 50%,
+    rgba(0,0,0,0.00) 65%,
+    transparent 100%
+  );
+}
+.ctaBtn:hover::after,
+.pill:hover::after,
+button.link:hover::after{
+  opacity: 1;
+  animation: sweep 750ms ease forwards;
+}
+@keyframes sweep{
+  from{ transform: translateX(-120%) skewX(-12deg); }
+  to{ transform: translateX(120%) skewX(-12deg); }
+}
+
+/* Cursor spotlight (apply class luxSpot + set --mx/--my via JS) */
+.luxSpot{
+  position:relative;
+}
+.luxSpot::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity: 0;
+  transition: opacity .18s ease;
+  background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), var(--glow2), transparent 55%);
+}
+.luxSpot:hover::before{ opacity: 1; }
+@media (prefers-reduced-motion: reduce){
+  .luxSpot::before{ transition:none; }
+  .ctaBtn:hover::after,
+  .pill:hover::after,
+  button.link:hover::after{ animation:none; opacity:0; }
+}
+
 /* App canvas */
 .frame{
   position:relative;

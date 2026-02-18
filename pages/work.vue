@@ -18,7 +18,14 @@
       </div>
 
       <div class="grid" data-reveal>
-        <NuxtLink v-for="p in shown" :key="p.id" class="card" :to="`/project/${p.id}`">
+        <NuxtLink
+          v-for="p in shown"
+          :key="p.id"
+          class="card luxSpot"
+          :to="`/project/${p.id}`"
+          @mousemove="(e) => onSpot(e)"
+          @mouseleave="(e) => offSpot(e)"
+        >
           <div class="top">
             <div class="k">{{ p.title }}</div>
             <div class="k dim2">{{ p.badge }}</div>
@@ -74,6 +81,23 @@ const best = computed(() => {
 })
 
 const shown = computed(() => (mode.value === 'best' ? best.value : projects))
+
+function onSpot(e: MouseEvent){
+  const el = e.currentTarget as HTMLElement | null
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const x = ((e.clientX - r.left) / r.width) * 100
+  const y = ((e.clientY - r.top) / r.height) * 100
+  el.style.setProperty('--mx', `${x}%`)
+  el.style.setProperty('--my', `${y}%`)
+}
+
+function offSpot(e: MouseEvent){
+  const el = e.currentTarget as HTMLElement | null
+  if (!el) return
+  el.style.setProperty('--mx', '50%')
+  el.style.setProperty('--my', '50%')
+}
 </script>
 
 <style scoped>
