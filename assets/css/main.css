@@ -23,35 +23,38 @@
 }
 
 html[data-theme="light"]{
-  /* Light mode (crisp, high contrast) */
+  /* Light mode (crisp, readable, still premium) */
   --bg:#ffffff;
   --fg:#0b0b0b;
-  --muted:rgba(0,0,0,.78);
-  --muted2:rgba(0,0,0,.62);
+  --muted:rgba(0,0,0,.72);
+  --muted2:rgba(0,0,0,.56);
   --line:rgba(0,0,0,.26);
   --bar: rgba(0,0,0,.00);
 
-  /* Premium layer in light mode must be extremely restrained */
-  --glow: rgba(0,0,0,.02);
-  --glow2: rgba(0,0,0,.015);
-  --strokeHi: rgba(0,0,0,.30);
-  --strokeLo: rgba(0,0,0,.18);
+  /* Premium layer (light): visible, but controlled */
+  --glow: rgba(0,0,0,.05);
+  --glow2: rgba(0,0,0,.03);
+  --strokeHi: rgba(0,0,0,.28);
+  --strokeLo: rgba(0,0,0,.16);
 
   /* Keep light mode clean (no grain) */
   --grain: none;
 }
 
-/* Light mode safety: prevent any blend/filters from washing UI. */
-html[data-theme="light"] *{
-  mix-blend-mode: normal;
-}
-html[data-theme="light"] img,
-html[data-theme="light"] video{
-  filter: none !important;
+/* HDR / tone-mapping safety (prevents light mode from fading). */
+@media (dynamic-range: high){
+  html[data-theme="light"]{
+    --muted:rgba(0,0,0,.82);
+    --muted2:rgba(0,0,0,.68);
+    --line:rgba(0,0,0,.32);
+    --strokeHi: rgba(0,0,0,.34);
+    --strokeLo: rgba(0,0,0,.20);
+  }
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+html{ color-scheme: light dark; }
 body{
   margin:0;
   background:var(--bg);
