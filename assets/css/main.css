@@ -64,6 +64,12 @@ body::before{
   mix-blend-mode: overlay;
 }
 
+/* Light mode tuning: prevent "white wash" from overlay blending. */
+html[data-theme="light"] body::before{
+  opacity: .08;
+  mix-blend-mode: multiply;
+}
+
 /* Keep app content above grain. */
 .frame{ z-index: 1; }
 
