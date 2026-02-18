@@ -23,19 +23,22 @@
 }
 
 html[data-theme="light"]{
-  /* Light mode needed more contrast for readability */
-  --bg:#ffffff;
+  /* Light mode: keep it slightly warm so lines/readability stay premium */
+  --bg:#f8f8f6;
   --fg:#0b0b0b;
-  --muted:rgba(0,0,0,.70);
-  --muted2:rgba(0,0,0,.56);
-  --line:rgba(0,0,0,.26);
+  --muted:rgba(0,0,0,.72);
+  --muted2:rgba(0,0,0,.58);
+  --line:rgba(0,0,0,.20);
   --bar: rgba(0,0,0,.00);
 
-  /* Premium layer (tuned for light backgrounds) */
-  --glow: rgba(0,0,0,.10);
-  --glow2: rgba(0,0,0,.06);
-  --strokeHi: rgba(0,0,0,.28);
-  --strokeLo: rgba(0,0,0,.16);
+  /* Premium layer (light): much softer shadows/glow to avoid haze */
+  --glow: rgba(0,0,0,.045);
+  --glow2: rgba(0,0,0,.03);
+  --strokeHi: rgba(0,0,0,.24);
+  --strokeLo: rgba(0,0,0,.12);
+
+  /* Disable grain in light mode (it can feel washed/dusty fast). */
+  --grain: none;
 }
 
 *{ box-sizing:border-box; }
@@ -66,8 +69,8 @@ body::before{
 
 /* Light mode tuning: prevent "white wash" from overlay blending. */
 html[data-theme="light"] body::before{
-  opacity: .08;
-  mix-blend-mode: multiply;
+  opacity: 0;
+  mix-blend-mode: normal;
 }
 
 /* Keep app content above grain. */
