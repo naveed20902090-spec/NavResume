@@ -23,22 +23,31 @@
 }
 
 html[data-theme="light"]{
-  /* Light mode: maximize readability (thin mono needs more contrast). */
+  /* Light mode (crisp, high contrast) */
   --bg:#ffffff;
-  --fg:#000000;
-  --muted:rgba(0,0,0,.86);
-  --muted2:rgba(0,0,0,.72);
-  --line:rgba(0,0,0,.32);
+  --fg:#0b0b0b;
+  --muted:rgba(0,0,0,.78);
+  --muted2:rgba(0,0,0,.62);
+  --line:rgba(0,0,0,.26);
   --bar: rgba(0,0,0,.00);
 
-  /* Premium layer (light): keep it crisp (almost no glow). */
+  /* Premium layer in light mode must be extremely restrained */
   --glow: rgba(0,0,0,.02);
   --glow2: rgba(0,0,0,.015);
-  --strokeHi: rgba(0,0,0,.38);
-  --strokeLo: rgba(0,0,0,.22);
+  --strokeHi: rgba(0,0,0,.30);
+  --strokeLo: rgba(0,0,0,.18);
 
-  /* Disable grain in light mode (avoid haze). */
+  /* Keep light mode clean (no grain) */
   --grain: none;
+}
+
+/* Light mode safety: prevent any blend/filters from washing UI. */
+html[data-theme="light"] *{
+  mix-blend-mode: normal;
+}
+html[data-theme="light"] img,
+html[data-theme="light"] video{
+  filter: none !important;
 }
 
 *{ box-sizing:border-box; }
