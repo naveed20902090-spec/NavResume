@@ -11,6 +11,7 @@
     <section class="body">
       <div class="k dim2" data-reveal>{{ site.about.kicker }}</div>
       <div class="k title" data-reveal>( ABOUT )</div>
+      <div class="luxDivider" data-line />
 
       <div class="museum">
         <div class="leftCol">

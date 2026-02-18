@@ -2,7 +2,10 @@
   <footer class="ftr" data-reveal>
     <div class="left">
       <button class="k link" @click="toggleTheme">( • {{ themeLabel }} )</button>
-      <button class="k link" @click="toggleSound">( • {{ soundLabel }} )</button>
+      <button class="k link" @click="toggleSound">
+        ( • {{ soundLabel }} )
+        <span v-if="soundOn" class="eq" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
       <div class="vol" aria-label="Background music volume">
         <span class="k dim2">( VOL {{ volumePct }}% )</span>
         <input class="slider" type="range" min="0" max="100" :value="volumePct" @input="(e:any)=>setVolume(Number(e.target.value)/100)" />
@@ -42,7 +45,7 @@ const props = withDefaults(defineProps<{ current:number; total:number; year?: st
 defineEmits<{ (e:'back'):void; (e:'listing'):void; (e:'jump', i:number):void }>()
 
 const { theme, toggle: toggleTheme } = useTheme()
-const { label: soundLabel, toggle: toggleSound, volume, volumePct, setVolume } = useAudio()
+const { enabled: soundOn, label: soundLabel, toggle: toggleSound, volume, volumePct, setVolume } = useAudio()
 
 // Match reference: label shows the mode you will switch to.
 const themeLabel = computed(() => theme.value === 'dark' ? 'LIGHT' : 'DARK')
@@ -88,6 +91,32 @@ const themeLabel = computed(() => theme.value === 'dark' ? 'LIGHT' : 'DARK')
 .link{ transition: opacity .18s ease; }
 .link:hover{ opacity: 1; }
 
+.eq{
+  display:inline-flex;
+  gap: 3px;
+  margin-left: 8px;
+  opacity: .55;
+  align-items:flex-end;
+  translate: 0 1px;
+}
+.eq span{
+  width: 2px;
+  height: 10px;
+  background: var(--fg);
+  opacity: .55;
+  animation: eq 900ms ease-in-out infinite;
+}
+.eq span:nth-child(2){ height: 14px; animation-duration: 760ms; opacity: .65; }
+.eq span:nth-child(3){ height: 9px; animation-duration: 1040ms; opacity: .45; }
+@keyframes eq{
+  0%{ transform: scaleY(.35); }
+  40%{ transform: scaleY(1); }
+  100%{ transform: scaleY(.42); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .eq span{ animation:none; }
+}
 
 .vol{
   display:flex;

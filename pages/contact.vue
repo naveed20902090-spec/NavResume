@@ -11,6 +11,7 @@
 
     <section class="body">
       <div class="k title" data-reveal>( CONTACT )</div>
+      <div class="luxDivider" data-line />
 
       <div class="card" data-reveal>
         <div class="k">FASTEST WAY TO HIRE</div>

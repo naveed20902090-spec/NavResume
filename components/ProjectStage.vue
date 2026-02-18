@@ -416,14 +416,24 @@ function onLeave(){
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
-const hoverStyle = computed(() => ({
-  '--mx': `${hx.value}%`,
-  '--my': `${hy.value}%`,
-  '--ripO': String(Math.min(0.26, colorO.value * 0.26)),
-  '--waveMask': waveMask.value,
-  '--waveVis': waveVis.value,
-  '--colorO': String(colorO.value)
-}))
+const hoverStyle = computed(() => {
+  // parallax: keep it very subtle (museum luxury)
+  const dx = (hx.value - 50) / 50
+  const dy = (hy.value - 50) / 50
+  const px = dx * 6
+  const py = dy * 4
+
+  return {
+    '--mx': `${hx.value}%`,
+    '--my': `${hy.value}%`,
+    '--px': `${px.toFixed(2)}px`,
+    '--py': `${py.toFixed(2)}px`,
+    '--ripO': String(Math.min(0.26, colorO.value * 0.26)),
+    '--waveMask': waveMask.value,
+    '--waveVis': waveVis.value,
+    '--colorO': String(colorO.value)
+  }
+})
 
 const imgFxClass = computed(() => {
   if (rippleActive.value) return 'swapRipple'
@@ -479,11 +489,14 @@ onBeforeUnmount(() => {
   inset:0;
   --mx: 50%;
   --my: 50%;
+  --px: 0px;
+  --py: 0px;
   --ripO: 0;
   --colorO: 0;
   --waveMask: radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%);
   --waveVis: none;
   will-change: transform;
+  transform: translate3d(var(--px), var(--py), 0);
 }
 
 .media{

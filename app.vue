@@ -25,7 +25,16 @@ function lockScroll(lock: boolean){
 function animateReveals(root: HTMLElement){
   if (reduced()) return
   const items = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
-  if (!items.length) return
+  const lines = Array.from(root.querySelectorAll<HTMLElement>('[data-line]'))
+  if (!items.length && !lines.length) return
+
+  // Hairline dividers draw in.
+  if (lines.length){
+    gsap.fromTo(lines,
+      { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 0.55, duration: 0.75, ease: 'power3.out', stagger: 0.06, clearProps: 'transform' }
+    )
+  }
 
   const titles = items.filter(el => el.classList.contains('title'))
   const rest = items.filter(el => !el.classList.contains('title'))

@@ -11,6 +11,7 @@
 
     <section class="body">
       <div class="k title" data-reveal>( SERVICES )</div>
+      <div class="luxDivider" data-line />
 
       <!-- Museum-plaques (quick scan) -->
       <div class="plaqueGrid" data-reveal>
@@ -110,7 +111,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.body{ flex:1; padding-top: 6vh; padding-bottom: 6vh; }
+.body{ flex:1; padding-top: 6vh; padding-bottom: 2vh; }
 .title{ margin-bottom: 14px; }
 
 .plaqueGrid{

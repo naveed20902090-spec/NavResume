@@ -67,6 +67,14 @@ body::before{
 /* Keep app content above grain. */
 .frame{ z-index: 1; }
 
+/* Default depth (premium baseline): subtle inner edge highlight. */
+.card,
+.panel,
+.plaque,
+.plaqueRow .plaque{
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--strokeLo) 65%, transparent) inset;
+}
+
 /* Premium hover treatment: gentle glow + slightly higher stroke. */
 .card:hover,
 .panel:hover,
@@ -133,6 +141,36 @@ button.link:hover::after{
 @keyframes sweep{
   from{ transform: translateX(-120%) skewX(-12deg); }
   to{ transform: translateX(120%) skewX(-12deg); }
+}
+
+/* CTA press/release (expensive click feel) */
+.ctaBtn,
+.cta,
+.pill,
+button.link{
+  will-change: transform;
+  transition: transform .14s ease, opacity .18s ease, border-color .18s ease;
+}
+.ctaBtn:active,
+.cta:active,
+.pill:active,
+button.link:active{
+  transform: scale(0.985);
+}
+@media (prefers-reduced-motion: reduce){
+  .ctaBtn,
+  .cta,
+  .pill,
+  button.link{ transition:none; }
+}
+
+/* Hairline divider (draw-in) */
+.luxDivider{
+  height: 1px;
+  width: 100%;
+  background: color-mix(in srgb, var(--line) 75%, transparent);
+  transform-origin: left;
+  opacity: .55;
 }
 
 /* Cursor spotlight (apply class luxSpot + set --mx/--my via JS) */

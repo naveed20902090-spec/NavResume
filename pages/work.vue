@@ -10,6 +10,7 @@
 
     <section class="body">
       <div class="k title" data-reveal>( WORK )</div>
+      <div class="luxDivider" data-line />
       <div class="k dim2" data-reveal>Quick scan for clients. Open a project to see goal, approach, deliverables.</div>
 
       <div class="toggle" data-reveal>
@@ -71,7 +72,7 @@ import { site } from '~/content/site'
 import { useProjects } from '~/composables/useProjects'
 
 const { projects } = useProjects()
-const mode = ref<'best'|'all'>('best')
+const mode = ref<'best'|'all'>('all')
 
 const best = computed(() => {
   return [...projects]
