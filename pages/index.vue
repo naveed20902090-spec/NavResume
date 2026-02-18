@@ -259,42 +259,6 @@ function leaveListing(el: Element, done: () => void){
   justify-content:space-between;
   gap: 18px;
   align-items:baseline;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Exhibit light: subtle band behind the hero (museum luxury) */
-.heroLine::after{
-  content:"";
-  position:absolute;
-  left:-20%;
-  top: -40px;
-  width: 140%;
-  height: 140px;
-  background: radial-gradient(closest-side,
-    rgba(255,255,255,0.14),
-    rgba(255,255,255,0.00) 70%
-  );
-  filter: blur(18px);
-  opacity: .42;
-  transform: translateX(-6%) translateY(0);
-  pointer-events:none;
-  animation: exhibit 9s ease-in-out infinite;
-}
-:global(html[data-theme="light"]) .heroLine::after{
-  background: radial-gradient(closest-side,
-    rgba(0,0,0,0.10),
-    rgba(0,0,0,0.00) 70%
-  );
-  opacity: .24;
-}
-@keyframes exhibit{
-  0%{ transform: translateX(-8%) translateY(0); opacity: .30; }
-  45%{ transform: translateX(6%) translateY(6px); opacity: .50; }
-  100%{ transform: translateX(-8%) translateY(0); opacity: .30; }
-}
-@media (prefers-reduced-motion: reduce){
-  .heroLine::after{ animation:none; }
 }
 @media (max-width:768px){
   .heroLine{ flex-direction:column; align-items:flex-start; gap:6px; }
