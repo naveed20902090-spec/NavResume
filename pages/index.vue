@@ -23,6 +23,11 @@
         <a class="k dim2 cta" :href="`mailto:${site.contact.email}`">( EMAIL )</a>
       </div>
 
+      <div class="proofRow">
+        <div class="k">PROCESS</div>
+        <div class="k dim2">ALIGN \u2192 FIRST CUT \u2192 SOUND + POLISH \u2192 DELIVER</div>
+      </div>
+
       <div class="pillRow">
         <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
       </div>
@@ -297,6 +302,19 @@ function leaveListing(el: Element, done: () => void){
   border: 1px solid var(--line);
   padding: 6px 10px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.proofRow{
+  margin-top: 14px;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+@media (max-width: 768px){
+  .proofRow{ flex-direction: column; align-items:flex-start; gap: 6px; }
 }
 
 .listMode{

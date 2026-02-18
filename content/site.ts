@@ -13,7 +13,7 @@ export const site = {
       youtube: "https://www.youtube.com/@PapaNavv",
       instagram: "https://www.instagram.com/na._.vvv/",
       // Add your Upwork profile link to enable Upwork CTAs across the site.
-      upwork: ""
+      upwork: "https://www.upwork.com/freelancers/~019f73df49b23e1412"
     }
   },
   about: {
@@ -89,7 +89,7 @@ export const site = {
       x: "https://x.com/NavOnTheBoof",
       facebook: "https://www.facebook.com/Naveeed.sama",
       // Add your Upwork profile link if you want it surfaced in Contact.
-      upwork: ""
+      upwork: "https://www.upwork.com/freelancers/~019f73df49b23e1412"
     }
   },
   youtube: {

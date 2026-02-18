@@ -45,6 +45,7 @@
       </div>
 
       <div class="cta" data-reveal>
+        <a v-if="site.hero.links.upwork" class="k dim2" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">( HIRE ON UPWORK )</a>
         <a class="k dim2" :href="`mailto:${site.contact.email}`">( REQUEST A QUOTE )</a>
       </div>
     </section>
@@ -138,7 +139,7 @@ onBeforeUnmount(() => {
   color: color-mix(in srgb, var(--fg) 72%, transparent);
 }
 .ul{ margin:10px 0 0; padding-left: 16px; }
-.cta{ margin-top: 14px; }
+.cta{ margin-top: 14px; display:flex; flex-wrap:wrap; gap: 14px; }
 @media (max-width: 1024px){
   .grid{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
