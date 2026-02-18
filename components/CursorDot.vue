@@ -19,9 +19,10 @@ onMounted(() => {
   const el = dot.value
   gsap.set(el, { x: window.innerWidth / 2, y: window.innerHeight / 2 })
 
-  const dur = prefersReduce() ? 0 : 0.22
-  const xTo = gsap.quickTo(el, 'x', { duration: dur, ease: 'power3' })
-  const yTo = gsap.quickTo(el, 'y', { duration: dur, ease: 'power3' })
+  // A bit more lag = more premium (desktop only)
+  const dur = prefersReduce() ? 0 : 0.32
+  const xTo = gsap.quickTo(el, 'x', { duration: dur, ease: 'power3.out' })
+  const yTo = gsap.quickTo(el, 'y', { duration: dur, ease: 'power3.out' })
 
   const onMove = (e: MouseEvent) => {
     xTo(e.clientX)

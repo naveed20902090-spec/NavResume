@@ -286,7 +286,8 @@ button{
 
 /* Theme-specific blending (keeps dot readable on pure black/white). */
 html[data-theme="dark"] .cursorDot{ mix-blend-mode: difference; opacity: .28; }
-html[data-theme="light"] .cursorDot{ mix-blend-mode: multiply; opacity: .16; }
+/* Light mode: difference avoids "washed" cursor on HDR/tone-mapped whites */
+html[data-theme="light"] .cursorDot{ mix-blend-mode: difference; opacity: .20; }
 
 @media (hover: none), (pointer: coarse){
   .cursorDot{ display:none; }

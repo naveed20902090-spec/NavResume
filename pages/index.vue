@@ -51,6 +51,7 @@
           <div class="listingInner" ref="listingInner" tabindex="-1">
             <div class="k" id="listingTitle">WORK</div>
             <div class="k dim2" style="margin-top:6px;">( click a project )</div>
+            <div class="luxDivider" data-line style="margin-top:14px;" />
 
             <div class="listMode">
               <button class="k dim2 mode" :data-active="listingMode==='best' ? '1' : '0'" @click="listingMode='best'">( BEST )</button>
@@ -233,10 +234,16 @@ function enterListing(el: Element, done: () => void){
 
   gsap.set(el, { opacity: 0 })
   gsap.set(inner, { y: 18, opacity: 0, scale: 0.99 })
+  gsap.set(inner as any, { '--edgeClip': 100 })
 
   const tl = gsap.timeline({ onComplete: done, defaults: { ease: 'power3.out' } })
   tl.to(el, { opacity: 1, duration: 0.22 }, 0)
     .to(inner, { y: 0, opacity: 1, scale: 1, duration: 0.52 }, 0.08)
+
+  // Edge clip reveal (subtle)
+  const innerEl = inner as HTMLElement
+  tl.fromTo(innerEl, { clipPath: 'inset(0 0 12% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 0.62, ease: 'power3.out', clearProps: 'clip-path' }, 0.10)
+    .to(innerEl as any, { '--edgeClip': 0, duration: 0.62, ease: 'power3.out' }, 0.10)
     .fromTo(rows, { y: 10, opacity: 0, filter: 'blur(2px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.38, stagger: 0.045, clearProps: 'filter' }, 0.20)
 }
 
@@ -350,6 +357,20 @@ function leaveListing(el: Element, done: () => void){
   border: 1px solid var(--line);
   background: var(--bg);
   padding: 22px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* subtle clip reveal edge */
+.listingInner::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  opacity: .55;
+  pointer-events:none;
+  /* clip reveal driven by --edgeClip (0-100) */
+  clip-path: inset(0 0 calc(var(--edgeClip, 100) * 1%) 0);
 }
 .list{
   margin-top: 10px;

@@ -64,6 +64,7 @@ const chevD = computed(() => {
 
 const wrap = ref<HTMLElement | null>(null)
 let hoverTl: gsap.core.Timeline | null = null
+let breatheTl: gsap.core.Timeline | null = null
 
 function reduce(){
   if (!process.client) return true
@@ -73,13 +74,36 @@ function reduce(){
 onMounted(() => {
   if (!wrap.value || reduce()) return
   const arcs = wrap.value.querySelectorAll<SVGPathElement>('.arc')
+  const chev = wrap.value.querySelector<SVGPathElement>('.chev')
+  const dot = wrap.value.querySelector<SVGCircleElement>('.dot')
+
   hoverTl = gsap.timeline({ paused: true })
     .to(wrap.value, { scale: 1.01, duration: 0.22, ease: 'power2.out' }, 0)
     .to(arcs, { opacity: 0.55, duration: 0.22, ease: 'power2.out', stagger: 0.03 }, 0)
+    .to(chev, { opacity: 0.75, duration: 0.22, ease: 'power2.out' }, 0)
+    .to(dot, { opacity: 0.62, duration: 0.22, ease: 'power2.out' }, 0)
+
+  // Breathe on activeArc changes (feels "alive" during switching)
+  breatheTl = gsap.timeline({ paused: true })
+    .fromTo(wrap.value, { scale: 0.995 }, { scale: 1.01, duration: 0.36, ease: 'power2.out' }, 0)
+    .to(chev, { opacity: 0.9, duration: 0.26, ease: 'power2.out' }, 0)
+    .to(dot, { opacity: 0.75, duration: 0.26, ease: 'power2.out' }, 0)
+    .to(arcs, { opacity: (i:number) => (i === props.activeArc ? 0.44 : 0.20), duration: 0.34, ease: 'power2.out' }, 0)
+    .to(wrap.value, { scale: 1.0, duration: 0.42, ease: 'power3.out' }, 0.26)
+    .to(chev, { opacity: 0.42, duration: 0.55, ease: 'power3.out' }, 0.34)
+    .to(dot, { opacity: 0.38, duration: 0.55, ease: 'power3.out' }, 0.34)
+
+  // play once on mount so it settles nicely
+  breatheTl.play(0)
 })
 
 function onEnter(){ hoverTl?.play() }
 function onLeave(){ hoverTl?.reverse() }
+
+watch(() => props.activeArc, () => {
+  if (reduce()) return
+  breatheTl?.restart(true)
+})
 </script>
 
 <style scoped>
