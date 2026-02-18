@@ -7,6 +7,13 @@
   --line:rgba(255,255,255,.14);
   --bar: rgba(255,255,255,.00);
 
+  /* Premium layer (Museum Luxury) */
+  --glow: rgba(255,255,255,.10);
+  --glow2: rgba(255,255,255,.06);
+  --strokeHi: rgba(255,255,255,.22);
+  --strokeLo: rgba(255,255,255,.12);
+  --grain: url('/grain.svg');
+
   --padX: 3.2vw;
   --padY: 2.2vh;
   --font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -23,6 +30,12 @@ html[data-theme="light"]{
   --muted2:rgba(0,0,0,.56);
   --line:rgba(0,0,0,.26);
   --bar: rgba(0,0,0,.00);
+
+  /* Premium layer (tuned for light backgrounds) */
+  --glow: rgba(0,0,0,.10);
+  --glow2: rgba(0,0,0,.06);
+  --strokeHi: rgba(0,0,0,.28);
+  --strokeLo: rgba(0,0,0,.16);
 }
 
 *{ box-sizing:border-box; }
@@ -36,6 +49,43 @@ body{
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color .2s ease, color .2s ease;
+}
+
+/* Cinematic grain (subtle, premium depth). */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background-image: var(--grain);
+  background-repeat: repeat;
+  opacity: .22;
+  mix-blend-mode: overlay;
+}
+
+/* Keep app content above grain. */
+.frame{ z-index: 1; }
+
+/* Premium hover treatment: gentle glow + slightly higher stroke. */
+.card:hover,
+.panel:hover,
+.plaque:hover,
+.plaqueRow .plaque:hover{
+  box-shadow:
+    0 0 0 1px var(--strokeLo) inset,
+    0 10px 40px var(--glow2),
+    0 0 22px var(--glow);
+}
+
+/* Premium CTA hover: clean stroke and glow. */
+a.link:hover,
+button.link:hover,
+.pill:hover,
+.ctaBtn:hover{
+  box-shadow:
+    0 0 0 1px var(--strokeHi) inset,
+    0 0 18px var(--glow);
 }
 
 /* App canvas */
