@@ -23,11 +23,17 @@ export type Project = {
     src: string
     alt: string
   }
+  /**
+   * Featured projects appear in the "Best" view used for quick client scanning.
+   * Lower rank = higher priority. Omit for non-featured.
+   */
+  featuredRank?: number
 }
 
 export const projects: Project[] = [
   {
     id: 'showreel',
+    featuredRank: 2,
     title: 'SHOWREEL',
     desc: 'A curated gaming montage reel — story-led pacing, music sync, and layered sound design built for replay value.',
     youtubeId: '6k_Esgfw57k',
@@ -58,6 +64,7 @@ export const projects: Project[] = [
 
   {
     id: 'client-montage',
+    featuredRank: 1,
     title: 'CLIENT MONTAGE',
     desc: 'Client gaming montage built around a clear brief: high-impact pacing, clean structure, and a polished grade + mix.',
     youtubeId: 'jD5L_jbf3To',
@@ -88,6 +95,7 @@ export const projects: Project[] = [
 
   {
     id: 'cascade',
+    featuredRank: 3,
     title: 'DESIGN PROJECT: CASCADE (ROYAL JOHOR MUSEUM)',
     desc: 'Architectural showcase for the Royal Johor Museum — cinematic reveals, controlled pacing, and music-synced sound design that elevates the space.',
     youtubeId: 'D6hvPAyYvgo',

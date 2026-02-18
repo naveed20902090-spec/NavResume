@@ -7,6 +7,12 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'description', content: "Story-first video editor for cinematic montages, architectural/brand showcases, vlogs, podcasts & retention-first short-form." },
+        { property: 'og:title', content: "Tauseef Rahman (NAV) — Cinematic Video Editor" },
+        { property: 'og:description', content: "Cinematic, retention-first video editing: gaming montages, architectural showcases, long-form and short-form." },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://navresume.vercel.app' },
+        { property: 'og:image', content: 'https://i.ytimg.com/vi/6k_Esgfw57k/hqdefault.jpg' },
+        { name: 'twitter:card', content: 'summary_large_image' },
       ],
       link: [
         // Replace with the exact font once known; this is a close visual surrogate.

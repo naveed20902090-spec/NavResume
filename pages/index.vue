@@ -13,6 +13,21 @@
       <div class="k">{{ site.hero.headline }}</div>
     </div>
 
+    <div class="heroSub" data-reveal>
+      <p class="p">{{ site.hero.sub }}</p>
+
+      <div class="ctaRow">
+        <button class="k cta" @click="openListing('best')">( VIEW BEST 3 )</button>
+        <button class="k dim2 cta" @click="openListing('all')">( VIEW ALL WORK )</button>
+        <a v-if="site.hero.links.upwork" class="k dim2 cta" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">( HIRE ON UPWORK )</a>
+        <a class="k dim2 cta" :href="`mailto:${site.contact.email}`">( EMAIL )</a>
+      </div>
+
+      <div class="pillRow">
+        <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
+      </div>
+    </div>
+
     <ProjectStage v-model="idx" :projects="projects" />
 
     <FooterNav
@@ -32,12 +47,17 @@
             <div class="k" id="listingTitle">WORK</div>
             <div class="k dim2" style="margin-top:6px;">( click a project )</div>
 
+            <div class="listMode">
+              <button class="k dim2 mode" :data-active="listingMode==='best' ? '1' : '0'" @click="listingMode='best'">( BEST )</button>
+              <button class="k dim2 mode" :data-active="listingMode==='all' ? '1' : '0'" @click="listingMode='all'">( ALL )</button>
+            </div>
+
             <div class="list">
               <button
-                v-for="(p, i) in projects"
+                v-for="(p, i) in listingProjects"
                 :key="p.id"
                 class="row"
-                @click="selectProject(i, p.id)"
+                @click="selectProjectFromList(i, p.id)"
               >
                 <span class="k">{{ p.title }}</span>
                 <span class="k dim2">{{ p.badge }}</span>
@@ -66,6 +86,7 @@ import { site } from '~/content/site'
 const { projects } = useProjects()
 const idx = ref(0)
 const listingOpen = ref(false)
+const listingMode = ref<'all'|'best'>('all')
 const year = String(new Date().getFullYear())
 
 const listingEl = ref<HTMLElement | null>(null)
@@ -76,7 +97,8 @@ const restoreFocus = ref(true)
 
 function jump(i:number){ idx.value = i }
 
-function openListing(){
+function openListing(mode: 'all'|'best' = 'all'){
+  listingMode.value = mode
   if (process.client) {
     restoreFocus.value = true
     lastActiveEl.value = document.activeElement as HTMLElement | null
@@ -90,12 +112,22 @@ function closeListing(){
 
 function toggleListing(){
   if (listingOpen.value) closeListing()
-  else openListing()
+  else openListing('all')
 }
 
-function selectProject(i:number, id:string){
+const listingProjects = computed(() => {
+  const all = projects
+  const best = [...projects]
+    .filter(p => typeof p.featuredRank === 'number')
+    .sort((a,b) => (a.featuredRank! - b.featuredRank!))
+  return listingMode.value === 'best' ? best : all
+})
+
+function selectProjectFromList(i:number, id:string){
   restoreFocus.value = false
-  jump(i)
+  // ensure the stage index follows the chosen project (even if list is "best")
+  const fullIndex = projects.findIndex(p => p.id === id)
+  if (fullIndex >= 0) jump(fullIndex)
   closeListing()
   navigateTo(`/project/${id}`)
 }
@@ -227,6 +259,64 @@ function leaveListing(el: Element, done: () => void){
   .heroLine{ flex-direction:column; align-items:flex-start; gap:6px; }
 }
 
+.heroSub{
+  margin-top: 10px;
+  width: min(980px, 100%);
+}
+.p{
+  margin: 0;
+  font-size: calc(var(--fs) * 1.02);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+.ctaRow{
+  margin-top: 12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+.cta{
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  transition: opacity .18s ease, border-color .18s ease;
+}
+.cta:hover{
+  opacity: .86;
+  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
+}
+.pillRow{
+  margin-top: 12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+.pill{
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.listMode{
+  margin-top: 16px;
+  display:flex;
+  gap: 10px;
+}
+.mode{
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  opacity: .7;
+  transition: opacity .18s ease, border-color .18s ease;
+}
+.mode[data-active="1"]{
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--fg) 26%, var(--bg));
+}
+.mode:hover{ opacity: 1; }
+
 .listing{
   position:fixed;
   inset:0;
@@ -244,7 +334,7 @@ function leaveListing(el: Element, done: () => void){
   padding: 22px;
 }
 .list{
-  margin-top: 16px;
+  margin-top: 10px;
   display:flex;
   flex-direction:column;
   gap: 8px;

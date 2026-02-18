@@ -13,6 +13,14 @@
       <div class="k title" data-reveal>( CONTACT )</div>
 
       <div class="card" data-reveal>
+        <div class="k">FASTEST WAY TO HIRE</div>
+        <div class="links" style="margin-top:10px;">
+          <a v-if="site.hero.links.upwork" class="k dim2 link" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">( UPWORK )</a>
+          <a class="k dim2 link" :href="`mailto:${site.contact.email}`">( EMAIL )</a>
+        </div>
+
+        <div class="sep" />
+
         <div class="k">EMAIL</div>
         <a class="k dim2 link" :href="`mailto:${site.contact.email}`">{{ site.contact.email }}</a>
 
@@ -31,6 +39,16 @@
             rel="noreferrer"
           >( {{ key.toUpperCase() }} )</a>
         </div>
+
+        <div class="sep" />
+
+        <div class="k">QUICK BRIEF</div>
+        <p class="p" style="margin-top:10px;">Send 3 things and I can quote fast:</p>
+        <ul class="ul">
+          <li class="p li">Type of video + examples (links)</li>
+          <li class="p li">Deadline + deliverables (length, format)</li>
+          <li class="p li">Footage link + any must-keep moments</li>
+        </ul>
 
         <div class="sep" />
 
@@ -76,6 +94,16 @@ const otherLinks = computed(() => {
 .link{ transition: opacity .18s ease; }
 .link:hover{ opacity: 1; }
 .sep{ height: 14px; }
+.p{
+  margin: 0;
+  font-size: var(--fs);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+.ul{ margin:10px 0 0; padding-left: 16px; }
+.li{ margin-top: 8px; }
 @media (prefers-reduced-motion: reduce){
   .link{ transition:none; }
 }

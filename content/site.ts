@@ -7,9 +7,14 @@ export const site = {
   hero: {
     kicker: "Rhythm \u2022 Atmosphere \u2022 Sonic detail",
     headline: "I turn raw footage into cinematic, high-retention stories.",
-    sub: "I’m Tauseef Rahman (NAV) — a video editor who loves telling stories through visuals. I cut cinematic montages, architectural/brand showcases, podcasts & interviews, and high-retention short-form. Every edit is built on pacing, sound design, and clean structure so the story lands.",
-    pills: ["Formats: long + short", "Focus: story + pacing", "Sound: SFX + mix", "Tools: Premiere Pro"],
-    links: {"youtube": "https://www.youtube.com/@PapaNavv", "instagram": "https://www.instagram.com/na._.vvv/"}
+    sub: "Video editing for creators and studios who want clean structure, intentional pacing, and sound design that makes every cut feel expensive.",
+    pills: ["Gaming montages", "Architectural showcases", "Long + short-form", "Sound design + mix"],
+    links: {
+      youtube: "https://www.youtube.com/@PapaNavv",
+      instagram: "https://www.instagram.com/na._.vvv/",
+      // Add your Upwork profile link to enable Upwork CTAs across the site.
+      upwork: ""
+    }
   },
   about: {
     headline: "I edit like a film: tension, timing, release.",
@@ -79,7 +84,13 @@ export const site = {
   },
   contact: {
     email: "naveed2090@gmail.com",
-    links: {"instagram": "https://www.instagram.com/na._.vvv/", "x": "https://x.com/NavOnTheBoof", "facebook": "https://www.facebook.com/Naveeed.sama"}
+    links: {
+      instagram: "https://www.instagram.com/na._.vvv/",
+      x: "https://x.com/NavOnTheBoof",
+      facebook: "https://www.facebook.com/Naveeed.sama",
+      // Add your Upwork profile link if you want it surfaced in Contact.
+      upwork: ""
+    }
   },
   youtube: {
     showreelId: "6k_Esgfw57k",
