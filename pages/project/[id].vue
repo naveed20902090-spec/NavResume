@@ -2,7 +2,7 @@
   <main class="frame">
     <HeaderNav
       @home="navigateTo('/')"
-      @work="navigateTo('/')"
+      @work="navigateTo('/work')"
       @services="navigateTo('/services')"
       @about="navigateTo('/about')"
       @contact="navigateTo('/contact')"
@@ -44,6 +44,21 @@
           <div class="k">DELIVERABLES</div>
           <ul class="ul">
             <li v-for="d in project.deliverables" :key="d" class="p li">{{ d }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sell" data-reveal>
+        <div class="panel">
+          <div class="k">WHAT YOU GET</div>
+          <ul class="ul">
+            <li v-for="x in whatYouGet" :key="x" class="p li">{{ x }}</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="k">TIMELINE</div>
+          <ul class="ul">
+            <li v-for="x in timeline" :key="x" class="p li">{{ x }}</li>
           </ul>
         </div>
       </div>
@@ -104,6 +119,42 @@ const project = computed(() => projects.find(p => p.id === id.value) || projects
 
 const total = computed(() => projects.length)
 const currentIndex = computed(() => Math.max(0, projects.findIndex(p => p.id === project.value.id)))
+
+const isGaming = computed(() => /montage|gaming/i.test(project.value.category) || /montage|gaming/i.test(project.value.badge))
+const isArchitecture = computed(() => /architect/i.test(project.value.category) || /design film/i.test(project.value.badge))
+
+const whatYouGet = computed(() => {
+  if (isArchitecture.value) {
+    return [
+      'Intentional pacing + detail-first reveals (museum-style restraint)',
+      'Sound design layers (ambience + accents) synced to movement',
+      'Minimal titles and clean structure for credibility',
+      'Platform-ready exports (YouTube / website version)'
+    ]
+  }
+  if (isGaming.value) {
+    return [
+      'Music-led structure with controlled escalation (not random clips)',
+      'Impact sound design (hits, risers, whooshes) with a clean mix',
+      'Purposeful FX/motion only where it improves readability',
+      'Exports ready for YouTube (and social cutdowns if needed)'
+    ]
+  }
+  return [
+    'Clean structure and pacing built for retention',
+    'Sound polish and mix tuned for real-world playback',
+    'Versioned exports for approvals and quick revisions'
+  ]
+})
+
+const timeline = computed(() => {
+  return [
+    'Alignment: references + intensity level (10–15 min)',
+    'First cut: structure + timing',
+    'Sound + polish: mix, accents, cleanup',
+    'Delivery: versioned exports + notes'
+  ]
+})
 
 // Audio controls (surface a mute toggle at the top of the project page)
 const { enabled, label: audioLabel, toggle, setEnabled } = useAudio()
@@ -316,6 +367,14 @@ function jumpTo(i:number){
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   padding: 14px;
 }
+
+.sell{
+  margin-top: 16px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .case{
   margin-top: 16px;
   display:grid;
@@ -359,6 +418,7 @@ function jumpTo(i:number){
 
 @media (max-width: 860px){
   .plaqueRow{ grid-template-columns: 1fr; }
+  .sell{ grid-template-columns: 1fr; }
   .case{ grid-template-columns: 1fr; }
 }
 </style>

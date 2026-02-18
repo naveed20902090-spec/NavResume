@@ -2,7 +2,7 @@
   <main class="frame">
     <HeaderNav
       @home="navigateTo('/')"
-      @work="toggleListing"
+      @work="navigateTo('/work')"
       @services="navigateTo('/services')"
       @about="navigateTo('/about')"
       @contact="navigateTo('/contact')"

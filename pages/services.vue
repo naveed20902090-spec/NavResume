@@ -3,7 +3,7 @@
     
     <HeaderNav
       @home="navigateTo('/')"
-      @work="navigateTo('/')"
+      @work="navigateTo('/work')"
       @services="navigateTo('/services')"
       @about="navigateTo('/about')"
       @contact="navigateTo('/contact')"

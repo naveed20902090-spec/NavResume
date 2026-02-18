@@ -59,7 +59,7 @@ const activeKey = computed<Key>(() => {
   if (p.startsWith('/services')) return 'services'
   if (p.startsWith('/about')) return 'about'
   if (p.startsWith('/contact')) return 'home'
-  // Keep "HOME" active by default; WORK is a section on the home page.
+  if (p.startsWith('/work') || p.startsWith('/project')) return 'work'
   return 'home'
 })
 
