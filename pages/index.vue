@@ -8,30 +8,29 @@
       @contact="navigateTo('/contact')"
     />
 
-    <div class="heroLine" data-reveal>
-      <div class="k dim2">{{ site.hero.kicker }}</div>
-      <div class="k">{{ site.hero.headline }}</div>
-    </div>
+    <!-- HERO (Figma-style) -->
+    <section class="hero" aria-label="Intro" data-reveal>
+      <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
 
-    <div class="heroSub" data-reveal>
-      <p class="p">{{ site.hero.sub }}</p>
+      <h1 class="heroTitle">{{ site.hero.headline }}</h1>
 
-      <div class="ctaRow">
-        <button class="k cta" @click="openListing('best')">( VIEW BEST 3 )</button>
-        <button class="k dim2 cta" @click="openListing('all')">( VIEW ALL WORK )</button>
-        <a v-if="site.hero.links.upwork" class="k dim2 cta" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">( HIRE ON UPWORK )</a>
-        <a class="k dim2 cta" :href="`mailto:${site.contact.email}`">( EMAIL )</a>
-      </div>
+      <p class="heroDesc">{{ site.hero.sub }}</p>
 
-      <div class="proofRow">
-        <div class="k">PROCESS</div>
-        <div class="k dim2">ALIGN • FIRST CUT • SOUND + POLISH • DELIVER</div>
-      </div>
-
-      <div class="pillRow">
+      <div class="pillRow" aria-label="Services">
         <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
       </div>
-    </div>
+
+      <div class="heroActions" aria-label="Primary actions">
+        <button class="heroBtn primary" type="button" @click="openListing('all')">
+          <span class="k">VIEW WORK</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </button>
+
+        <button class="heroBtn" type="button" @click="navigateTo('/contact')">
+          <span class="k">GET IN TOUCH</span>
+        </button>
+      </div>
+    </section>
 
     <ProjectStage v-model="idx" :projects="projects" />
 
@@ -260,68 +259,81 @@ function leaveListing(el: Element, done: () => void){
 </script>
 
 <style scoped>
-.heroLine{
+.hero{
   margin-top: 14px;
-  display:flex;
-  justify-content:space-between;
-  gap: 18px;
-  align-items:baseline;
-}
-@media (max-width:768px){
-  .heroLine{ flex-direction:column; align-items:flex-start; gap:6px; }
-}
-
-.heroSub{
-  margin-top: 10px;
   width: min(980px, 100%);
 }
-.p{
-  margin: 0;
-  font-size: calc(var(--fs) * 1.02);
-  letter-spacing: 0.01em;
+.heroKicker{
+  opacity: .75;
+}
+.heroTitle{
+  margin: 16px 0 0;
+  font: inherit;
   text-transform: none;
-  line-height: 1.65;
+  letter-spacing: 0;
+  line-height: 1.06;
+  font-weight: 600;
+  /* Figma-style big monospace hero */
+  font-size: clamp(44px, 5.4vw, 78px);
+  color: var(--fg);
+}
+.heroDesc{
+  margin: 18px 0 0;
+  max-width: 62ch;
+  font-size: calc(var(--fs) * 1.02);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.7;
   color: color-mix(in srgb, var(--fg) 78%, transparent);
 }
-.ctaRow{
-  margin-top: 12px;
-  display:flex;
-  flex-wrap:wrap;
-  gap: 10px;
-}
-.cta{
-  border: 1px solid var(--line);
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  transition: opacity .18s ease, border-color .18s ease;
-}
-.cta:hover{
-  opacity: .86;
-  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
-}
+
 .pillRow{
-  margin-top: 12px;
+  margin-top: 22px;
   display:flex;
   flex-wrap:wrap;
-  gap: 10px;
+  gap: 12px;
 }
 .pill{
   border: 1px solid var(--line);
-  padding: 6px 10px;
+  padding: 10px 14px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
 }
 
-.proofRow{
-  margin-top: 14px;
+.heroActions{
+  margin-top: 34px;
   display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap: 14px;
-  padding-top: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  flex-wrap:wrap;
+  gap: 18px;
 }
+.heroBtn{
+  border: 1px solid var(--line);
+  padding: 16px 22px;
+  min-width: 220px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  transition: opacity .18s ease, border-color .18s ease, transform .14s ease;
+}
+.heroBtn.primary{
+  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
+}
+.heroBtn:hover{
+  opacity: .86;
+  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
+}
+.heroBtn:active{
+  transform: scale(0.985);
+}
+.arrow{
+  font-size: 1.05em;
+  opacity: .85;
+}
+
 @media (max-width: 768px){
-  .proofRow{ flex-direction: column; align-items:flex-start; gap: 6px; }
+  .heroTitle{ font-size: clamp(34px, 9vw, 56px); }
+  .heroBtn{ min-width: 0; width: 100%; justify-content:space-between; }
 }
 
 .listMode{
