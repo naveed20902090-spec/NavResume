@@ -21,8 +21,46 @@ export const site = {
     subhead: "Short, clear, professional \u2014 with a cinematic edge.",
     kicker: "Based in Dhaka \u2022 Remote-friendly \u2022 Fast turnarounds",
     body: "I started with whatever I had \u2014 a laptop, headphones, and too many late nights. I learned by rebuilding edits frame by frame, chasing the moment where pacing, music, and sound design lock in. Now I cut story-first work across gaming montages, architectural/brand showcases, vlogs, and podcasts \u2014 with clean structure and museum-level restraint. If it doesn\u2019t serve the story, it doesn\u2019t stay.",
-    strengths: ["Trailer/film pacing + structure", "Sound design layers (hits, risers, ambience)", "Clean grade + mix for a premium feel", "Long-form + short-form packaging"],
-    workflow: ["Reference alignment (style + intensity)", "First pass: story + timing", "Second: sound design + polish", "Final: finishing + exports"]
+    strengths: [
+      {
+        title: "Trailer pacing + structure",
+        description: "I build edits like sequences—setup, escalation, release—so the audience always feels pulled forward."
+      },
+      {
+        title: "Sound design layers",
+        description: "Hits, risers, whooshes, ambience—mixed clean so the energy feels expensive, not noisy."
+      },
+      {
+        title: "Clean grade + mix",
+        description: "A controlled finish for real-world playback: clarity, impact, and consistency across platforms."
+      },
+      {
+        title: "Long-form + short-form packaging",
+        description: "I cut the master story, then extract retention-first shorts that keep context and punch."
+      }
+    ],
+    workflow: [
+      {
+        step: "01",
+        title: "Alignment",
+        description: "References, intensity level, deliverables, and the one thing the edit must achieve."
+      },
+      {
+        step: "02",
+        title: "First cut",
+        description: "Story and timing first. If it doesn’t serve the arc, it doesn’t stay."
+      },
+      {
+        step: "03",
+        title: "Sound + polish",
+        description: "Sound-led transitions, mix, cleanup, and controlled visual emphasis."
+      },
+      {
+        step: "04",
+        title: "Delivery",
+        description: "Versioned exports, notes, and platform-ready formats."
+      }
+    ]
   },
   services: {
     // Upwork-friendly: quick scan, clear outcomes.
@@ -101,11 +139,16 @@ export const site = {
     ]
   },
   contact: {
+    kicker: "Fast replies • Clear briefs • Clean scope",
+    headline: "Send a brief. I’ll quote fast.",
+    cta: "If you want cinematic polish and retention-first structure, send a short message with your references, deliverables, and deadline.",
+    availability: "Currently accepting freelance projects + ongoing retainers.",
     email: "naveed2090@gmail.com",
     links: {
       instagram: "https://www.instagram.com/na._.vvv/",
       x: "https://x.com/NavOnTheBoof",
       facebook: "https://www.facebook.com/Naveeed.sama",
+      youtube: "https://www.youtube.com/@PapaNavv",
       // Add your Upwork profile link if you want it surfaced in Contact.
       upwork: "https://www.upwork.com/freelancers/~019f73df49b23e1412"
     }

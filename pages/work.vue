@@ -9,48 +9,65 @@
     />
 
     <section class="body">
-      <div class="k title" data-reveal>( WORK )</div>
-      <div class="luxDivider" data-line />
-      <div class="k dim2" data-reveal>Quick scan for clients. Open a project to see goal, approach, deliverables.</div>
+      <!-- Header -->
+      <div class="head" data-reveal>
+        <div>
+          <div class="k title h1">Work</div>
+          <div class="k dim">{{ shown.length }} {{ mode==='best' ? 'featured' : 'total' }} projects</div>
+        </div>
 
-      <div class="toggle" data-reveal>
-        <button class="k dim2 tbtn" :data-active="mode==='best' ? '1' : '0'" @click="mode='best'">( BEST 3 )</button>
-        <button class="k dim2 tbtn" :data-active="mode==='all' ? '1' : '0'" @click="mode='all'">( ALL )</button>
+        <div class="toggle" data-reveal>
+          <button class="k dim2 tbtn" :data-active="mode==='best' ? '1' : '0'" @click="mode='best'">( BEST 3 )</button>
+          <button class="k dim2 tbtn" :data-active="mode==='all' ? '1' : '0'" @click="mode='all'">( ALL )</button>
+        </div>
       </div>
 
+      <div class="luxDivider" data-line />
+
+      <!-- Grid -->
       <div class="grid" data-reveal>
         <NuxtLink
           v-for="p in shown"
           :key="p.id"
           class="card luxSpot"
           :to="`/project/${p.id}`"
-          @mousemove="(e) => onSpot(e)"
-          @mouseleave="(e) => offSpot(e)"
+          @mousemove="onSpot"
+          @mouseleave="offSpot"
         >
-          <div class="top">
-            <div class="k">{{ p.title }}</div>
-            <div class="k dim2">{{ p.badge }}</div>
-          </div>
-
           <div class="thumb">
             <img :src="p.media.src" :alt="p.media.alt" loading="lazy" decoding="async" />
-            <div class="chip k dim2">( OPEN )</div>
+            <div v-if="typeof p.featuredRank === 'number'" class="best k">Best #{{ p.featuredRank }}</div>
+            <div class="open k dim2">( OPEN )</div>
           </div>
 
-          <p class="p">{{ p.desc }}</p>
+          <div class="content">
+            <div class="top">
+              <div class="k">{{ p.title }}</div>
+              <div class="k dim2">{{ p.badge }}</div>
+            </div>
 
-          <div class="meta">
-            <div class="k dim2">{{ p.metaLine }}</div>
-            <div class="tags">
-              <span v-for="t in p.tags" :key="t" class="k dim2 tag">{{ t }}</span>
+            <p class="p">{{ p.desc }}</p>
+
+            <div class="meta">
+              <div class="k dim2">{{ p.metaLine }}</div>
+              <div class="tags">
+                <span v-for="t in p.tags" :key="t" class="k dim2 tag">{{ t }}</span>
+              </div>
             </div>
           </div>
         </NuxtLink>
       </div>
 
-      <div class="cta" data-reveal>
-        <a v-if="site.hero.links.upwork" class="k dim2 ctaBtn" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">( HIRE ON UPWORK )</a>
-        <a class="k dim2 ctaBtn" :href="`mailto:${site.contact.email}`">( EMAIL )</a>
+      <!-- CTA -->
+      <div class="plaque luxSpot cta" data-reveal @mousemove="onSpot" @mouseleave="offSpot">
+        <div class="k title" style="font-size:24px;">Have a project in mind?</div>
+        <p class="k dim" style="max-width: 520px; margin: 10px auto 0; line-height: 1.6; text-transform:none; letter-spacing:0.01em;">
+          Let’s turn your raw footage into something cinematic.
+        </p>
+        <div class="ctaRow">
+          <a class="k ctaBtn" :href="`mailto:${site.contact.email}`">Get in touch</a>
+          <a v-if="site.hero.links.upwork" class="k dim link" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">Upwork</a>
+        </div>
       </div>
     </section>
 
@@ -103,93 +120,45 @@ function offSpot(e: MouseEvent){
 
 <style scoped>
 .body{ flex:1; padding-top: 6vh; padding-bottom: 6vh; }
-.title{ margin-bottom: 10px; }
 
-.toggle{
-  margin-top: 14px;
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-}
+.head{ display:flex; justify-content:space-between; align-items:flex-end; gap: 18px; flex-wrap:wrap; margin-bottom: 18px; }
+.h1{ font-size: 32px; margin-bottom: 8px; }
+
+.toggle{ display:flex; gap: 10px; flex-wrap:wrap; }
 .tbtn{
   border: 1px solid var(--line);
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   opacity: .7;
   transition: opacity .18s ease, border-color .18s ease;
 }
-.tbtn[data-active="1"]{
-  opacity: 1;
-  border-color: color-mix(in srgb, var(--fg) 26%, var(--bg));
-}
+.tbtn[data-active="1"]{ opacity: 1; border-color: color-mix(in srgb, var(--fg) 26%, var(--bg)); }
 .tbtn:hover{ opacity: 1; }
 
-.grid{
-  margin-top: 14px;
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-.card{
-  border: 1px solid var(--line);
-  padding: 16px;
-  background: color-mix(in srgb, var(--bg) 74%, transparent);
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-  transition: border-color .18s ease, opacity .18s ease;
-}
-.card:hover{ border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); opacity: .92; }
+.grid{ margin-top: 22px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card{ border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 74%, transparent); overflow:hidden; }
 
-.top{ display:flex; justify-content:space-between; gap: 12px; align-items:baseline; }
-
-.thumb{
-  position:relative;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  overflow:hidden;
-}
-.thumb img{ width:100%; height:auto; display:block; filter: grayscale(1) contrast(1.06) brightness(0.98); transition: filter .25s ease; }
+.thumb{ position:relative; aspect-ratio: 16/9; border-bottom: 1px solid var(--line); overflow:hidden; }
+.thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter: grayscale(1) contrast(1.06) brightness(0.98); transition: filter .25s ease; }
 .card:hover .thumb img{ filter: grayscale(0.15) contrast(1.02) brightness(1.02); }
-.chip{
-  position:absolute;
-  right: 10px;
-  bottom: 10px;
-  border: 1px solid var(--line);
-  padding: 6px 8px;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter: blur(6px);
-}
+.best{ position:absolute; top: 10px; left: 10px; padding: 6px 10px; border: 1px solid var(--strokeHi); background: var(--bg); font-size: 11px; }
+.open{ position:absolute; right: 10px; bottom: 10px; padding: 6px 10px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(6px); }
 
-.p{
-  margin: 0;
-  font-size: calc(var(--fs) * 1.02);
-  letter-spacing: 0.01em;
-  text-transform: none;
-  line-height: 1.65;
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-}
-
-.meta{ margin-top: 4px; display:flex; flex-direction:column; gap: 10px; }
+.content{ padding: 16px; display:flex; flex-direction:column; gap: 10px; }
+.top{ display:flex; justify-content:space-between; gap: 12px; align-items:baseline; }
+.p{ margin: 0; font-size: calc(var(--fs) * 1.02); letter-spacing: 0.01em; text-transform: none; line-height: 1.65; color: color-mix(in srgb, var(--fg) 78%, transparent); }
+.meta{ margin-top: 2px; display:flex; flex-direction:column; gap: 10px; }
 .tags{ display:flex; flex-wrap:wrap; gap: 10px; justify-content:flex-end; }
 .tag{ border: 1px solid var(--line); padding: 6px 8px; }
 
-.cta{ margin-top: 16px; display:flex; gap: 12px; flex-wrap:wrap; }
-.ctaBtn{
-  border: 1px solid var(--line);
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  transition: opacity .18s ease, border-color .18s ease;
-}
-.ctaBtn:hover{ opacity: .86; border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); }
+.cta{ margin-top: 46px; padding: 56px var(--padX); border: 1px solid var(--strokeLo); text-align:center; background: color-mix(in srgb, var(--bg) 74%, transparent); }
+.ctaRow{ margin-top: 18px; display:flex; justify-content:center; flex-wrap:wrap; gap: 12px; }
+.ctaRow a{ border: 1px solid var(--strokeLo); padding: 14px 32px; display:inline-flex; align-items:center; }
+.ctaRow a.ctaBtn{ border-color: var(--strokeHi); }
 
 @media (max-width: 1024px){
   .grid{ grid-template-columns: 1fr; }
-  .top{ flex-direction: column; align-items:flex-start; }
+  .top{ flex-direction:column; align-items:flex-start; }
   .tags{ justify-content:flex-start; }
-}
-
-@media (prefers-reduced-motion: reduce){
-  .card, .thumb img, .tbtn, .ctaBtn{ transition:none; }
 }
 </style>

@@ -9,73 +9,106 @@
     />
 
     <section class="body">
-      <div class="k dim2" data-reveal>{{ site.about.kicker }}</div>
-      <div class="k title" data-reveal>( ABOUT )</div>
+      <!-- Intro -->
+      <div class="intro" data-reveal>
+        <div class="k dim2 kicker">{{ site.about.kicker }}</div>
+        <h1 class="k title h1">{{ site.about.headline }}</h1>
+        <p class="k dim lead">{{ site.description }}</p>
+      </div>
+
       <div class="luxDivider" data-line />
 
-      <div class="museum">
-        <div class="leftCol">
-          <div class="panel lead" data-reveal>
-            <div class="k">{{ site.about.headline }}</div>
-            <p class="p">{{ site.about.body }}</p>
-            <div class="k dim2 metaLine">{{ site.location }}</div>
+      <!-- Strengths -->
+      <div class="section">
+        <h2 class="k title h2" data-reveal>What I bring to every edit</h2>
+
+        <div class="grid2">
+          <div
+            v-for="(s, i) in site.about.strengths"
+            :key="s.title"
+            class="plaque luxSpot strength"
+            data-reveal
+            @mousemove="onSpot"
+            @mouseleave="offSpot"
+          >
+            <div class="k dim2 idx">( {{ String(i + 1).padStart(2, '0') }} )</div>
+            <div class="k st">{{ s.title }}</div>
+            <p class="k dim sd">{{ s.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="luxDivider" data-line />
+
+      <!-- Workflow -->
+      <div class="section">
+        <h2 class="k title h2" data-reveal>My workflow</h2>
+
+        <div class="stack">
+          <div
+            v-for="step in site.about.workflow"
+            :key="step.step"
+            class="plaque luxSpot workflow"
+            data-reveal
+            @mousemove="onSpot"
+            @mouseleave="offSpot"
+          >
+            <div class="k step">{{ step.step }}</div>
+            <div>
+              <div class="k wt">{{ step.title }}</div>
+              <p class="k dim wd">{{ step.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="luxDivider" data-line />
+
+      <!-- Beyond -->
+      <div class="section" data-reveal>
+        <h2 class="k title h2">Beyond the edit</h2>
+
+        <div class="beyond">
+          <div>
+            <p class="k dim para">
+              I started editing gaming montages in 2018—learning rhythm, pacing, and the power of a perfectly timed cut.
+              That foundation evolved into architectural showcases, brand work, and retention-first content.
+            </p>
+            <p class="k dim para">
+              Based in {{ site.location }}, working with creators and studios globally. I specialize in projects that demand precision,
+              cinematic polish, and sound design that makes every frame feel intentional.
+            </p>
           </div>
 
-          <div class="split">
-            <div class="panel" data-reveal>
-              <div class="k">STRENGTHS</div>
-              <ul class="ul">
-                <li v-for="s in site.about.strengths" :key="s" class="p li">{{ s }}</li>
-              </ul>
+          <div>
+            <div class="k dim2 label">Tools &amp; Software</div>
+            <div class="pillWrap">
+              <span v-for="tool in tools" :key="tool" class="k dim pill">{{ tool }}</span>
             </div>
 
-            <div class="panel" data-reveal>
-              <div class="k">WORKFLOW</div>
-              <ul class="ul">
-                <li v-for="w in site.about.workflow" :key="w" class="p li">{{ w }}</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="panel" data-reveal style="margin-top:14px;">
-            <div class="k">WORKING WITH ME</div>
-            <p class="p">Fast, structured, and easy to manage. You’ll always know what’s next, what I need, and when you’ll get the next version.</p>
+            <div class="k dim2 label" style="margin-top:18px;">Specialties</div>
             <ul class="ul">
-              <li class="p li">Communication: quick updates, clear questions, no fluff</li>
-              <li class="p li">Revisions: focused iteration (keep scope clean, improve what matters)</li>
-              <li class="p li">Delivery: versioned exports + notes, platform-ready formats</li>
+              <li v-for="sp in specialties" :key="sp" class="k dim li"><span class="k dim2">→</span> {{ sp }}</li>
             </ul>
           </div>
         </div>
+      </div>
 
-        <aside class="rightCol">
-          <figure class="portrait" data-reveal>
-            <div class="mat">
-              <div
-                ref="portraitStage"
-                class="photoStage"
-                :data-active="portraitActive ? '1' : '0'"
-                :style="portraitStyle"
-                @pointerenter="onPortraitEnter"
-                @pointermove="onPortraitMove"
-                @pointerleave="onPortraitLeave"
-              >
-                <img class="photo photoColor" src="/profile.jpg" alt="Tauseef Rahman portrait" loading="lazy" decoding="async" />
-                <img class="photo photoBW" src="/profile.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async" />
-                <div class="halo" aria-hidden="true"></div>
-              </div>
-            </div>
-            <figcaption class="k dim2 cap">
-              {{ site.displayName.toUpperCase() }} • {{ site.handle.toUpperCase() }} • {{ site.location.toUpperCase() }}
-            </figcaption>
-          </figure>
-
-          <div class="cta" data-reveal>
-            <a class="k dim2" :href="`mailto:${site.contact.email}`">( HIRE VIA EMAIL )</a>
-            <a class="k dim2" :href="site.hero.links.youtube" target="_blank" rel="noreferrer">( YOUTUBE )</a>
-            <a class="k dim2" :href="site.hero.links.instagram" target="_blank" rel="noreferrer">( INSTAGRAM )</a>
-          </div>
-        </aside>
+      <!-- Connect CTA -->
+      <div
+        class="plaque luxSpot connect"
+        data-reveal
+        @mousemove="onSpot"
+        @mouseleave="offSpot"
+      >
+        <div class="k title" style="font-size: 24px;">Let’s connect</div>
+        <p class="k dim" style="max-width:540px; margin: 10px auto 0; line-height:1.7;">
+          Available for freelance projects, retainer work, and studio partnerships.
+        </p>
+        <div class="connectRow">
+          <a class="k ctaBtn" :href="`mailto:${site.contact.email}`">Email me</a>
+          <a class="k dim link" :href="site.hero.links.instagram" target="_blank" rel="noreferrer">Instagram DM</a>
+        </div>
       </div>
     </section>
 
@@ -92,229 +125,85 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onBeforeUnmount } from 'vue'
+import { computed } from 'vue'
 import { site } from '~/content/site'
 import { projects } from '~/composables/useProjects'
 
 const total = computed(() => projects.length)
 
-// Portrait: grayscale base with localized color reveal on hover
-// Make the mask motion "flowy" by lerping toward the pointer.
-const portraitStage = ref<HTMLElement | null>(null)
-const portraitActive = ref(false)
-const mx = ref(50)
-const my = ref(50)
+const tools = [
+  'Premiere Pro',
+  'After Effects',
+  'DaVinci Resolve',
+  'Audition / DAW',
+  'Photoshop'
+]
 
-let raf: number | null = null
-let tx = 50
-let ty = 50
+const specialties = [
+  'Gaming montages',
+  'Architectural showcases',
+  'Podcast editing',
+  'Short-form content',
+  'Sound design & mixing',
+  'Color grading'
+]
 
-function setTargetFromEvent(e: PointerEvent) {
-  const el = portraitStage.value
+function onSpot(e: MouseEvent){
+  const el = e.currentTarget as HTMLElement | null
   if (!el) return
   const r = el.getBoundingClientRect()
   const x = ((e.clientX - r.left) / r.width) * 100
   const y = ((e.clientY - r.top) / r.height) * 100
-  tx = Math.max(0, Math.min(100, x))
-  ty = Math.max(0, Math.min(100, y))
+  el.style.setProperty('--mx', `${x}%`)
+  el.style.setProperty('--my', `${y}%`)
 }
 
-function tick(){
-  raf = null
-  // easing factor: higher = snappier
-  const a = portraitActive.value ? 0.18 : 0.12
-  mx.value = mx.value + (tx - mx.value) * a
-  my.value = my.value + (ty - my.value) * a
-
-  const near = Math.abs(tx - mx.value) + Math.abs(ty - my.value) < 0.08
-  if (portraitActive.value || !near) {
-    raf = requestAnimationFrame(tick)
-  }
+function offSpot(e: MouseEvent){
+  const el = e.currentTarget as HTMLElement | null
+  if (!el) return
+  el.style.setProperty('--mx', '50%')
+  el.style.setProperty('--my', '50%')
 }
-
-function onPortraitEnter(e: PointerEvent) {
-  portraitActive.value = true
-  setTargetFromEvent(e)
-  if (raf == null) raf = requestAnimationFrame(tick)
-}
-
-function onPortraitMove(e: PointerEvent) {
-  if (!portraitActive.value) return
-  setTargetFromEvent(e)
-}
-
-function onPortraitLeave() {
-  portraitActive.value = false
-}
-
-onBeforeUnmount(() => {
-  if (raf != null) cancelAnimationFrame(raf)
-})
-
-const portraitStyle = computed(() => ({
-  '--mx': `${mx.value}%`,
-  '--my': `${my.value}%`,
-}))
-
 </script>
 
-
 <style scoped>
-.body{
-  flex:1;
-  padding-top: 6vh;
-  padding-bottom: 6vh;
-}
-.title{
-  margin-top: 10px;
-  margin-bottom: 22px;
-}
-.museum{
-  display:grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: clamp(18px, 3.2vw, 36px);
-  align-items:start;
-}
+.body{ flex:1; padding-top: 6vh; padding-bottom: 6vh; }
 
-.panel{
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 75%, transparent);
-  padding: 18px;
-}
-.lead{
-  padding: 22px;
-}
-.metaLine{
-  margin-top: 14px;
-}
+.intro{ margin-bottom: 22px; }
+.kicker{ font-size: 13px; margin-bottom: 14px; }
+.h1{ font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin: 0 0 12px; }
+.lead{ max-width: 720px; line-height: 1.8; font-size: 16px; margin: 0; text-transform: none; letter-spacing: 0.01em; }
 
-.split{
-  margin-top: 14px;
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
+.section{ margin-top: 40px; margin-bottom: 40px; }
+.h2{ font-size: 24px; margin: 0 0 18px; }
 
-.p{
-  margin: 10px 0 0;
-  font-size: calc(var(--fs) * 1.02);
-  letter-spacing: 0.01em;
-  text-transform: none;
-  line-height: 1.65;
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-}
-.li{ margin-top: 8px; }
-.ul{ margin:10px 0 0; padding-left: 16px; }
+.grid2{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.strength{ border: 1px solid var(--strokeLo); padding: 18px; background: color-mix(in srgb, var(--bg) 74%, transparent); }
+.idx{ font-size: 12px; margin-bottom: 10px; }
+.st{ font-size: 18px; margin-bottom: 10px; }
+.sd{ font-size: 14px; line-height: 1.7; text-transform:none; letter-spacing:0.01em; margin:0; }
 
-.rightCol{
-  position:relative;
-}
-.portrait{
-  margin: 0;
-}
-.mat{
-  border: 1px solid var(--line);
-  padding: 14px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  position: sticky;
-  top: 88px;
-}
-@property --revealR{
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --haloR{
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
+.stack{ display:flex; flex-direction:column; gap: 14px; }
+.workflow{ border: 1px solid var(--strokeLo); padding: 18px; background: color-mix(in srgb, var(--bg) 74%, transparent); display:grid; grid-template-columns: auto 1fr; gap: 22px; align-items:start; }
+.step{ font-size: 32px; opacity: .4; line-height: 1; }
+.wt{ font-size: 18px; margin-bottom: 8px; }
+.wd{ font-size: 14px; line-height: 1.7; text-transform:none; letter-spacing:0.01em; margin:0; }
 
-.photoStage{
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: 10px;
-  --mx: 50%;
-  --my: 50%;
-  --revealR: 0px;
-  --haloR: 0px;
-  transition: --revealR .26s ease, --haloR .26s ease;
-}
-.photoStage[data-active="1"]{
-  --revealR: 132px;
-  --haloR: 178px;
-}
-.photo{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.beyond{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.para{ font-size: 14px; line-height: 1.8; text-transform:none; letter-spacing:0.01em; margin: 0 0 12px; }
+.label{ font-size: 12px; margin-bottom: 10px; }
+.pillWrap{ display:flex; flex-wrap:wrap; gap: 10px; }
+.pill{ padding: 8px 16px; border: 1px solid var(--strokeLo); font-size: 12px; }
+.ul{ margin: 10px 0 0; padding-left: 0; list-style:none; display:flex; flex-direction:column; gap: 10px; }
+.li{ font-size: 13px; display:flex; gap: 10px; align-items:flex-start; }
 
-.photoBW{
-  filter: grayscale(1) contrast(1.05) brightness(0.98);
-  -webkit-mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my),
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0) 54%,
-    rgba(0,0,0,0.55) 72%,
-    rgba(0,0,0,1) 86%,
-    rgba(0,0,0,1) 100%);
-  mask-image: radial-gradient(circle var(--revealR) at var(--mx) var(--my),
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0) 54%,
-    rgba(0,0,0,0.55) 72%,
-    rgba(0,0,0,1) 86%,
-    rgba(0,0,0,1) 100%);
-}
+.connect{ margin-top: 46px; padding: 56px var(--padX); border: 1px solid var(--strokeLo); text-align:center; background: color-mix(in srgb, var(--bg) 74%, transparent); }
+.connectRow{ margin-top: 18px; display:flex; justify-content:center; flex-wrap:wrap; gap: 12px; }
+.connectRow a{ border: 1px solid var(--strokeLo); padding: 14px 32px; display:inline-flex; align-items:center; }
+.connectRow a.ctaBtn{ border-color: var(--strokeHi); }
 
-.halo{
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .16s ease;
-  background: radial-gradient(circle var(--haloR) at var(--mx) var(--my),
-    color-mix(in srgb, var(--fg) 34%, transparent) 0%,
-    color-mix(in srgb, var(--fg) 18%, transparent) 32%,
-    transparent 64%);
-  mix-blend-mode: screen;
-}
-.photoStage[data-active="1"] .halo{ opacity: 1; }
-
-@media (prefers-reduced-motion: reduce){
-  .photoStage{ transition: none; }
-  .halo{ transition: none; }
-}
-
-@media (hover: none), (pointer: coarse){
-  .photoBW{ -webkit-mask-image: none; mask-image: none; }
-  .halo{ display: none; }
-}
-
-.cap{
-  margin-top: 12px;
-  line-height: 1.4;
-  text-align:left;
-  opacity: .7;
-}
-
-.cta{
-  margin-top: 16px;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-}
-.cta a{
-  width: fit-content;
-}
-
-@media (max-width: 920px){
-  .museum{ grid-template-columns: 1fr; }
-  .split{ grid-template-columns: 1fr; }
-  .rightCol{ max-width: 520px; }
+@media (max-width: 1024px){
+  .grid2{ grid-template-columns: 1fr; }
+  .beyond{ grid-template-columns: 1fr; }
 }
 </style>
