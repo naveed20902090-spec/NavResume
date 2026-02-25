@@ -1,130 +1,95 @@
 <template>
-  <header class="hdr" data-reveal>
-    <div class="k left">
-      {{ site.displayName.toUpperCase() }}
-      <span class="k dim2 handle">{{ site.handle.toUpperCase() }}</span>
-    </div>
-
-    <nav class="mid" aria-label="Primary">
-      <div ref="stack" class="stack" @mouseleave="onLeave">
-        <span ref="bL" class="k dim2 bracket leftB">(</span>
-        <span ref="bR" class="k dim2 bracket rightB">)</span>
-
-        <a
-          v-for="it in items"
-          :key="it.key"
-          :ref="(el) => setItemRef(el as HTMLElement | null, it.key)"
-          class="k link navItem"
-          :class="{
-            dim2: !isHot(it.key),
-            hot: isHot(it.key),
-            hovered: hoverKey === it.key
-          }"
-          href="#"
-          @mouseenter="onEnter(it.key)"
-          @click.prevent="emitNav(it.key)"
-        >{{ it.label }}</a>
-      </div>
+  <header class="hdr" data-reveal :data-mode="mode">
+    <!-- TOP (scroll at top): centered vertical list like Figma -->
+    <nav class="topNav" aria-label="Primary" v-show="mode === 'top'">
+      <a
+        v-for="it in itemsTop"
+        :key="it.key"
+        class="k link topItem"
+        :class="{ dim2: !isActive(it.key), hot: isActive(it.key) }"
+        href="#"
+        @click.prevent="emitNav(it.key)"
+      >
+        <span v-if="isActive(it.key)">(</span>
+        {{ it.label }}
+        <span v-if="isActive(it.key)">)</span>
+      </a>
     </nav>
 
-    <div class="k right">
-      <a class="link contact" href="#" @mouseenter="contactHover = true" @mouseleave="contactHover = false" @click.prevent="$emit('contact')"
-        :class="{ dim2: !contactHover, hot: contactHover }"
-      >( CONTACT )</a>
-    </div>
+    <!-- SCROLLED: horizontal row with parentheses around each item (like Figma) -->
+    <nav class="rowNav" aria-label="Primary" v-show="mode === 'row'">
+      <a
+        v-for="it in itemsRow"
+        :key="it.key"
+        class="k link rowItem"
+        :class="{ dim2: !isHot(it.key), hot: isHot(it.key) }"
+        href="#"
+        @mouseenter="hoverKey = it.key"
+        @mouseleave="hoverKey = null"
+        @click.prevent="emitNav(it.key)"
+      >{{ it.label }}</a>
+    </nav>
   </header>
 </template>
 
 <script setup lang="ts">
-import gsap from 'gsap'
 import { site } from '~/content/site'
 
 const emit = defineEmits<{ (e:'home'):void; (e:'work'):void; (e:'services'):void; (e:'about'):void; (e:'contact'):void }>()
 const route = useRoute()
 
-const items = [
+const itemsTop = [
   { key: 'home', label: 'HOME' },
   { key: 'work', label: 'WORK' },
   { key: 'services', label: 'SERVICES' },
   { key: 'about', label: 'ABOUT' }
 ] as const
 
-type Key = typeof items[number]['key']
+const itemsRow = [
+  { key: 'home', label: 'HOME' },
+  { key: 'work', label: 'WORK' },
+  { key: 'services', label: 'SERVICES' },
+  { key: 'about', label: 'ABOUT' },
+  { key: 'contact', label: 'CONTACT' }
+] as const
+
+type Key = typeof itemsRow[number]['key']
 
 const hoverKey = ref<Key | null>(null)
-const contactHover = ref(false)
 
 const activeKey = computed<Key>(() => {
   const p = route.path
   if (p.startsWith('/services')) return 'services'
   if (p.startsWith('/about')) return 'about'
-  if (p.startsWith('/contact')) return 'home'
+  if (p.startsWith('/contact')) return 'contact'
   if (p.startsWith('/work') || p.startsWith('/project')) return 'work'
   return 'home'
 })
 
-const stack = ref<HTMLElement | null>(null)
-const bL = ref<HTMLElement | null>(null)
-const bR = ref<HTMLElement | null>(null)
-
-// quickTo setters (tighter, premium nav feel)
-let qxL: ((v:number)=>void) | null = null
-let qyL: ((v:number)=>void) | null = null
-let qsL: ((v:number)=>void) | null = null
-let qxR: ((v:number)=>void) | null = null
-let qyR: ((v:number)=>void) | null = null
-let qsR: ((v:number)=>void) | null = null
-
-const refs = new Map<Key, HTMLElement>()
-
-function setItemRef(el: HTMLElement | null, key: Key){
-  if (!el) return
-  refs.set(key, el)
-}
-
-function reduced(){
-  if (!process.client) return true
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+function isActive(key: Key){
+  return activeKey.value === key
 }
 
 function isHot(key: Key){
   return (hoverKey.value ?? activeKey.value) === key
 }
 
-function moveBracketTo(key: Key, scale = 1){
-  if (!process.client || !stack.value || !bL.value || !bR.value) return
-  const el = refs.get(key)
-  if (!el) return
+const mode = ref<'top'|'row'>('top')
 
-  const stackRect = stack.value.getBoundingClientRect()
-  const itemRect = el.getBoundingClientRect()
-
-  // Position brackets relative to the hovered item's box (pixel-accurate alignment)
-  const xPad = 10
-  const y = itemRect.top - stackRect.top
-  const leftX = (itemRect.left - stackRect.left) - xPad
-  const rightX = (itemRect.right - stackRect.left) + xPad
-
-  // Anchor left bracket from its left edge; right bracket from its right edge.
-  gsap.set(bL.value, { xPercent: 0, display: 'block' })
-  gsap.set(bR.value, { xPercent: -100, display: 'block' })
-
-  // Use quickTo for tighter, premium response (less "tween pile-up").
-  qxL?.(leftX); qyL?.(y); qsL?.(scale)
-  qxR?.(rightX); qyR?.(y); qsR?.(scale)
+function reduce(){
+  if (!process.client) return true
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-
-function onEnter(key: Key){
-  hoverKey.value = key
-  if (!reduced()) moveBracketTo(key, 1.25)
-  else moveBracketTo(key, 1)
-}
-
-function onLeave(){
-  hoverKey.value = null
-  // snap back to active route
-  moveBracketTo(activeKey.value, 1)
+function updateMode(){
+  if (!process.client) return
+  // Only apply this behavior on the homepage (Figma spec)
+  if (route.path !== '/') {
+    mode.value = 'row'
+    return
+  }
+  const y = window.scrollY || 0
+  mode.value = y <= 40 ? 'top' : 'row'
 }
 
 function emitNav(key: Key){
@@ -132,105 +97,101 @@ function emitNav(key: Key){
   if (key === 'work') emit('work')
   if (key === 'services') emit('services')
   if (key === 'about') emit('about')
+  if (key === 'contact') emit('contact')
 }
 
 onMounted(() => {
-  if (!process.client || !bL.value || !bR.value) return
-
-  // Build quickTo setters once.
-  const cfg = { duration: 0.28, ease: 'power3.out', overwrite: 'auto' as const }
-  qxL = gsap.quickTo(bL.value, 'x', cfg)
-  qyL = gsap.quickTo(bL.value, 'y', cfg)
-  qsL = gsap.quickTo(bL.value, 'scale', { duration: 0.22, ease: 'power3.out', overwrite: 'auto' })
-
-  qxR = gsap.quickTo(bR.value, 'x', cfg)
-  qyR = gsap.quickTo(bR.value, 'y', cfg)
-  qsR = gsap.quickTo(bR.value, 'scale', { duration: 0.22, ease: 'power3.out', overwrite: 'auto' })
-
-  nextTick(() => moveBracketTo(activeKey.value, 1))
+  if (!process.client) return
+  updateMode()
+  window.addEventListener('scroll', updateMode, { passive: true })
 })
 
-watch(activeKey, (k) => {
-  if (hoverKey.value) return
-  nextTick(() => moveBracketTo(k, 1))
+onBeforeUnmount(() => {
+  if (!process.client) return
+  window.removeEventListener('scroll', updateMode as any)
+})
+
+watch(() => route.path, () => {
+  if (!process.client) return
+  nextTick(() => updateMode())
 })
 </script>
 
 <style scoped>
 .hdr{
   position:relative;
-  display:grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items:start;
   padding-top: 8px;
   z-index:5;
+  min-height: 78px;
 }
-.left{ justify-self:start; padding-left: 2px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
-.handle{ font-size: calc(var(--fs) * 0.92); }
-.right{ justify-self:end; padding-right: 2px; }
 
-.mid{
-  justify-self:center;
-  display:flex;
-  align-items:flex-start;
+/* Smooth crossfade between modes */
+.topNav,
+.rowNav{
+  transition: opacity .22s ease, transform .22s ease;
 }
-.stack{
+
+.hdr[data-mode="top"] .topNav{ opacity: 1; transform: translateY(0); }
+.hdr[data-mode="top"] .rowNav{ opacity: 0; transform: translateY(-6px); pointer-events:none; }
+
+.hdr[data-mode="row"] .rowNav{ opacity: 1; transform: translateY(0); }
+.hdr[data-mode="row"] .topNav{ opacity: 0; transform: translateY(6px); pointer-events:none; }
+
+/* TOP MODE (Pic 4) */
+.topNav{
   position:relative;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap: 2px;
-  padding: 0 18px;
+  justify-content:center;
+  gap: 6px;
+  padding-top: 18px;
 }
-.bracket{
-  position:absolute;
-  top:0;
-  left:0;
-  transform: translate3d(0,0,0);
-  will-change: transform;
-  opacity: .62;
-  pointer-events:none;
+.topItem{
+  font-size: calc(var(--fs) * 1.35);
+  font-weight: 500;
+  letter-spacing: var(--ls);
+  opacity: .72;
+  box-shadow: none;
 }
-.rightB{ }
+.topItem.hot{ opacity: 1; }
+.topItem:hover,
+.topItem:focus,
+.topItem:focus-visible{ box-shadow:none !important; }
 
-.navItem{
-  display:inline-block;
-  transition: transform .18s ease, opacity .18s ease;
-  transform-origin: center;
-  font-size: calc(var(--fs) * 1.35);
+/* ROW MODE (Pic 3) */
+.rowNav{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 32px;
+  padding-top: 14px;
+  flex-wrap:wrap;
+}
+.rowItem{
+  font-size: calc(var(--fs) * 1.18);
   font-weight: 500;
-  /* Prevent global hover box/glow on nav items */
+  letter-spacing: var(--ls);
+  opacity: .72;
   box-shadow: none;
+  position:relative;
 }
-.navItem:hover,
-.navItem:focus,
-.navItem:focus-visible{
-  box-shadow: none !important;
-}
-.navItem.hovered{
-  transform: scale(1.08);
-}
-.navItem.hot{
-  opacity: 1;
-}
-.contact{
-  transition: opacity .18s ease;
-  font-size: calc(var(--fs) * 1.35);
-  font-weight: 500;
-  box-shadow: none;
-}
-.contact:hover,
-.contact:focus,
-.contact:focus-visible{
-  box-shadow: none !important;
-}
+/* Always show parentheses around items */
+.rowItem::before{ content:"( "; opacity: .9; }
+.rowItem::after{ content:" )"; opacity: .9; }
+
+.rowItem.hot{ opacity: 1; }
+.rowItem:hover,
+.rowItem:focus,
+.rowItem:focus-visible{ box-shadow:none !important; }
 
 @media (prefers-reduced-motion: reduce){
-  .navItem, .contact, .link{ transition:none; }
+  .topNav, .rowNav{ transition:none; }
 }
 
 @media (max-width: 768px){
-  .hdr{ grid-template-columns: 1fr 1fr; grid-auto-rows:auto; row-gap:6px; }
-  .mid{ grid-column: 1 / -1; justify-self:center; }
+  .hdr{ min-height: 64px; }
+  .rowNav{ gap: 18px; }
 }
 </style>
