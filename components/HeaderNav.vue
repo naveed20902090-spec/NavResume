@@ -1,7 +1,11 @@
 <template>
-  <header class="hdr" data-reveal :data-mode="mode">
+  <header class="hdr" data-reveal>
     <!-- TOP (scroll at top): centered vertical list like Figma -->
-    <nav class="topNav" aria-label="Primary" v-show="mode === 'top'">
+    <nav
+      class="topNav"
+      aria-label="Primary"
+      :style="topStyle"
+    >
       <a
         v-for="it in itemsTop"
         :key="it.key"
@@ -17,7 +21,11 @@
     </nav>
 
     <!-- SCROLLED: horizontal row with parentheses around each item (like Figma) -->
-    <nav class="rowNav" aria-label="Primary" v-show="mode === 'row'">
+    <nav
+      class="rowNav"
+      aria-label="Primary"
+      :style="rowStyle"
+    >
       <a
         v-for="it in itemsRow"
         :key="it.key"
@@ -74,22 +82,37 @@ function isHot(key: Key){
   return (hoverKey.value ?? activeKey.value) === key
 }
 
-const mode = ref<'top'|'row'>('top')
+const progress = ref(0) // 0 => top mode, 1 => row mode
 
 function reduce(){
   if (!process.client) return true
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function updateMode(){
+const TOP_RANGE = 90 // px: scroll distance over which the nav morphs
+
+let raf = 0
+function updateProgress(){
   if (!process.client) return
+
   // Only apply this behavior on the homepage (Figma spec)
   if (route.path !== '/') {
-    mode.value = 'row'
+    progress.value = 1
     return
   }
+
   const y = window.scrollY || 0
-  mode.value = y <= 40 ? 'top' : 'row'
+  const t = Math.min(1, Math.max(0, y / TOP_RANGE))
+  progress.value = t
+}
+
+function onScroll(){
+  if (!process.client) return
+  if (raf) return
+  raf = window.requestAnimationFrame(() => {
+    raf = 0
+    updateProgress()
+  })
 }
 
 function emitNav(key: Key){
@@ -100,20 +123,47 @@ function emitNav(key: Key){
   if (key === 'contact') emit('contact')
 }
 
+const topStyle = computed(() => {
+  const t = reduce() ? (progress.value > 0.01 ? 0 : 1) : (1 - progress.value)
+  const y = reduce() ? 0 : (progress.value * -10)
+  const blur = reduce() ? 0 : (progress.value * 3)
+
+  return {
+    opacity: String(t),
+    transform: `translate3d(0, ${y}px, 0)`,
+    filter: blur ? `blur(${blur}px)` : 'none',
+    pointerEvents: t > 0.35 ? 'auto' : 'none'
+  } as Record<string, string>
+})
+
+const rowStyle = computed(() => {
+  const t = reduce() ? (progress.value > 0.01 ? 1 : 0) : progress.value
+  const y = reduce() ? 0 : ((1 - progress.value) * 10)
+  const blur = reduce() ? 0 : ((1 - progress.value) * 3)
+
+  return {
+    opacity: String(t),
+    transform: `translate3d(0, ${y}px, 0)`,
+    filter: blur ? `blur(${blur}px)` : 'none',
+    pointerEvents: t > 0.35 ? 'auto' : 'none'
+  } as Record<string, string>
+})
+
 onMounted(() => {
   if (!process.client) return
-  updateMode()
-  window.addEventListener('scroll', updateMode, { passive: true })
+  updateProgress()
+  window.addEventListener('scroll', onScroll, { passive: true })
 })
 
 onBeforeUnmount(() => {
   if (!process.client) return
-  window.removeEventListener('scroll', updateMode as any)
+  window.removeEventListener('scroll', onScroll as any)
+  if (raf) window.cancelAnimationFrame(raf)
 })
 
 watch(() => route.path, () => {
   if (!process.client) return
-  nextTick(() => updateMode())
+  nextTick(() => updateProgress())
 })
 </script>
 
@@ -125,17 +175,12 @@ watch(() => route.path, () => {
   min-height: 78px;
 }
 
-/* Smooth crossfade between modes */
+/* Gradual morph: JS drives opacity/transform/filter via inline styles.
+   Keep will-change hints so it feels smooth. */
 .topNav,
 .rowNav{
-  transition: opacity .22s ease, transform .22s ease;
+  will-change: transform, opacity, filter;
 }
-
-.hdr[data-mode="top"] .topNav{ opacity: 1; transform: translateY(0); }
-.hdr[data-mode="top"] .rowNav{ opacity: 0; transform: translateY(-6px); pointer-events:none; }
-
-.hdr[data-mode="row"] .rowNav{ opacity: 1; transform: translateY(0); }
-.hdr[data-mode="row"] .topNav{ opacity: 0; transform: translateY(6px); pointer-events:none; }
 
 /* TOP MODE (Pic 4) */
 .topNav{
@@ -187,7 +232,7 @@ watch(() => route.path, () => {
 .rowItem:focus-visible{ box-shadow:none !important; }
 
 @media (prefers-reduced-motion: reduce){
-  .topNav, .rowNav{ transition:none; }
+  .topNav, .rowNav{ filter:none; }
 }
 
 @media (max-width: 768px){
