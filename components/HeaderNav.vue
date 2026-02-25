@@ -199,6 +199,13 @@ watch(activeKey, (k) => {
   transform-origin: center;
   font-size: calc(var(--fs) * 1.35);
   font-weight: 500;
+  /* Prevent global hover box/glow on nav items */
+  box-shadow: none;
+}
+.navItem:hover,
+.navItem:focus,
+.navItem:focus-visible{
+  box-shadow: none !important;
 }
 .navItem.hovered{
   transform: scale(1.08);
@@ -206,9 +213,16 @@ watch(activeKey, (k) => {
 .navItem.hot{
   opacity: 1;
 }
-.contact{ transition: opacity .18s ease; 
+.contact{
+  transition: opacity .18s ease;
   font-size: calc(var(--fs) * 1.35);
   font-weight: 500;
+  box-shadow: none;
+}
+.contact:hover,
+.contact:focus,
+.contact:focus-visible{
+  box-shadow: none !important;
 }
 
 @media (prefers-reduced-motion: reduce){
