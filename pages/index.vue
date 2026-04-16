@@ -13,11 +13,6 @@
     <div class="luxDivider heroDivider" data-line />
 
     <section class="hero heroFocused" aria-label="Intro" data-reveal>
-      <div class="heroAmbient" aria-hidden="true">
-        <span class="glow glowA"></span>
-        <span class="glow glowB"></span>
-      </div>
-
       <div class="heroIntro">
         <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
 
@@ -295,41 +290,12 @@ function leaveListing(el: Element, done: () => void){
   width: min(960px, 100%);
   padding: 26px 28px 24px;
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), color-mix(in srgb, var(--bg) 96%, transparent));
+  background: transparent;
   overflow: hidden;
   isolation: isolate;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
     0 28px 90px color-mix(in srgb, var(--fg) 4%, transparent);
-}
-
-.heroAmbient {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.glow {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(36px);
-  opacity: .4;
-}
-
-.glowA {
-  width: 320px;
-  height: 320px;
-  top: -120px;
-  left: -20px;
-  background: color-mix(in srgb, var(--fg) 8%, transparent);
-}
-
-.glowB {
-  width: 280px;
-  height: 280px;
-  right: -60px;
-  bottom: -150px;
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
 }
 
 .heroFocused {

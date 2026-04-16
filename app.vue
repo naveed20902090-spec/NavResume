@@ -1,5 +1,23 @@
 <template>
-  <LiquidEtherBackground />
+  <div class="liquidEtherRoot" aria-hidden="true">
+    <LiquidEtherBackground
+      :colors="['#5227FF', '#FF9FFC', '#B497CF']"
+      :mouse-force="10"
+      :cursor-size="55"
+      :is-viscous="false"
+      :viscous="30"
+      :iterations-viscous="32"
+      :iterations-poisson="32"
+      :resolution="0.5"
+      :is-bounce="false"
+      :auto-demo="true"
+      :auto-speed="0.1"
+      :auto-intensity="2.1"
+      :takeover-duration="0.25"
+      :auto-resume-delay="3000"
+      :auto-ramp-duration="0.6"
+    />
+  </div>
   <ClickSpark>
     <CursorDot />
     <div ref="layer" class="transitionLayer" aria-hidden="true" />
@@ -113,3 +131,12 @@ const pageTransition = {
   }
 }
 </script>
+
+<style scoped>
+.liquidEtherRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+</style>
