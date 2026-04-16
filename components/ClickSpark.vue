@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="canvas" class="clickSpark" aria-hidden="true" />
+  <canvas ref="canvasRef" class="clickSpark" aria-hidden="true" />
 </template>
 
 <script setup lang="ts">
@@ -8,113 +8,143 @@ import { useTheme } from '~/composables/useTheme'
 type Spark = {
   x: number
   y: number
-  vx: number
-  vy: number
-  life: number
-  maxLife: number
-  length: number
+  angle: number
+  startTime: number
 }
 
-const canvas = ref<HTMLCanvasElement | null>(null)
 const { theme } = useTheme()
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const sparks = ref<Spark[]>([])
+
+const sparkSize = 10
+const sparkRadius = 15
+const sparkCount = 8
+const duration = 400
+const easing = 'ease-out'
+const extraScale = 1
 
 let ctx: CanvasRenderingContext2D | null = null
 let raf = 0
-let width = 0
-let height = 0
-let dpr = 1
-const sparks: Spark[] = []
+let resizeObserver: ResizeObserver | null = null
+let resizeTimeout: ReturnType<typeof setTimeout> | null = null
 
-function reduce(){
+function reduced(){
   if (!process.client) return true
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function resize(){
-  const el = canvas.value
-  if (!el || !process.client) return
-  dpr = Math.min(window.devicePixelRatio || 1, 2)
-  width = window.innerWidth
-  height = window.innerHeight
-  el.width = Math.round(width * dpr)
-  el.height = Math.round(height * dpr)
-  el.style.width = `${width}px`
-  el.style.height = `${height}px`
-  ctx = el.getContext('2d')
+function sparkColor(){
+  return theme.value === 'light' ? '#000' : '#fff'
+}
+
+function resizeCanvas(){
+  const canvas = canvasRef.value
+  if (!canvas || !process.client) return
+  const parent = document.documentElement
+  const rect = parent.getBoundingClientRect()
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const width = Math.max(1, Math.round(window.innerWidth))
+  const height = Math.max(1, Math.round(window.innerHeight || rect.height))
+
+  if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+    canvas.width = Math.round(width * dpr)
+    canvas.height = Math.round(height * dpr)
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+  }
+
+  ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 }
 
-function color(){
-  return theme.value === 'light' ? '#000000' : '#ffffff'
-}
-
-function burst(x: number, y: number){
-  const count = 12
-  for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.24
-    const speed = 2.6 + Math.random() * 2.8
-    sparks.push({
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 0,
-      maxLife: 18 + Math.random() * 10,
-      length: 10 + Math.random() * 12
-    })
+function easeFunc(t: number){
+  switch (easing) {
+    case 'linear':
+      return t
+    case 'ease-in':
+      return t * t
+    case 'ease-in-out':
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+    default:
+      return t * (2 - t)
   }
-  if (!raf) raf = requestAnimationFrame(frame)
 }
 
-function frame(){
-  if (!ctx) return
-  ctx.clearRect(0, 0, width, height)
-  ctx.strokeStyle = color()
-  ctx.lineWidth = 1.5
-  ctx.lineCap = 'round'
+function draw(timestamp: number){
+  if (!ctx || !canvasRef.value) return
 
-  for (let i = sparks.length - 1; i >= 0; i--) {
-    const s = sparks[i]
-    s.life += 1
-    s.x += s.vx
-    s.y += s.vy
-    s.vx *= 0.96
-    s.vy *= 0.96
-    const alpha = Math.max(0, 1 - s.life / s.maxLife)
-    const nx = s.x - s.vx * s.length * 0.45
-    const ny = s.y - s.vy * s.length * 0.45
-    ctx.globalAlpha = alpha
+  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
+
+  sparks.value = sparks.value.filter(spark => {
+    const elapsed = timestamp - spark.startTime
+    if (elapsed >= duration) return false
+
+    const progress = elapsed / duration
+    const eased = easeFunc(progress)
+    const distance = eased * sparkRadius * extraScale
+    const lineLength = sparkSize * (1 - eased)
+
+    const x1 = spark.x + distance * Math.cos(spark.angle)
+    const y1 = spark.y + distance * Math.sin(spark.angle)
+    const x2 = spark.x + (distance + lineLength) * Math.cos(spark.angle)
+    const y2 = spark.y + (distance + lineLength) * Math.sin(spark.angle)
+
+    ctx.strokeStyle = sparkColor()
+    ctx.lineWidth = 2
+    ctx.globalAlpha = 1 - progress
     ctx.beginPath()
-    ctx.moveTo(s.x, s.y)
-    ctx.lineTo(nx, ny)
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
     ctx.stroke()
 
-    if (s.life >= s.maxLife) sparks.splice(i, 1)
-  }
+    return true
+  })
 
   ctx.globalAlpha = 1
 
-  if (sparks.length) raf = requestAnimationFrame(frame)
+  if (sparks.value.length) raf = requestAnimationFrame(draw)
   else raf = 0
 }
 
+function spawn(x: number, y: number){
+  const now = performance.now()
+  for (let i = 0; i < sparkCount; i++) {
+    sparks.value.push({
+      x,
+      y,
+      angle: (Math.PI * 2 * i) / sparkCount,
+      startTime: now
+    })
+  }
+  if (!raf) raf = requestAnimationFrame(draw)
+}
+
 function onPointerDown(e: PointerEvent){
-  if (reduce()) return
-  burst(e.clientX, e.clientY)
+  if (reduced()) return
+  spawn(e.clientX, e.clientY)
 }
 
 onMounted(() => {
-  if (!process.client || reduce()) return
-  resize()
-  window.addEventListener('resize', resize)
+  if (!process.client || reduced()) return
+
+  resizeCanvas()
   window.addEventListener('pointerdown', onPointerDown, { passive: true })
+  window.addEventListener('resize', resizeCanvas)
+
+  resizeObserver = new ResizeObserver(() => {
+    if (resizeTimeout) clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(resizeCanvas, 100)
+  })
+  resizeObserver.observe(document.documentElement)
 })
 
 onBeforeUnmount(() => {
   if (!process.client) return
-  window.removeEventListener('resize', resize)
   window.removeEventListener('pointerdown', onPointerDown)
+  window.removeEventListener('resize', resizeCanvas)
+  if (resizeObserver) resizeObserver.disconnect()
+  if (resizeTimeout) clearTimeout(resizeTimeout)
   if (raf) cancelAnimationFrame(raf)
 })
 </script>

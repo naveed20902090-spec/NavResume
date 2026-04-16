@@ -958,10 +958,8 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
         if (this.active) this.forceStop()
         return
       }
-      if (this.mouse.isHoverInside) {
-        if (this.active) this.forceStop()
-        return
-      }
+      // Full-screen background means the pointer is almost always "inside",
+      // so we do not use hover state to suppress auto-demo here.
       if (!this.active) {
         this.active = true
         this.current.copy(this.mouse.coords)
