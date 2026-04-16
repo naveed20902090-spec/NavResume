@@ -1,5 +1,8 @@
 <template>
-  <canvas ref="canvasRef" class="clickSpark" aria-hidden="true" />
+  <div class="clickSparkWrap" @click="handleClick">
+    <canvas ref="canvasRef" class="clickSparkCanvas" aria-hidden="true" />
+    <slot />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -14,7 +17,7 @@ type Spark = {
 
 const { theme } = useTheme()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const sparks = ref<Spark[]>([])
+const sparksRef = ref<Spark[]>([])
 
 const sparkSize = 10
 const sparkRadius = 15
@@ -24,7 +27,7 @@ const easing = 'ease-out'
 const extraScale = 1
 
 let ctx: CanvasRenderingContext2D | null = null
-let raf = 0
+let animationId = 0
 let resizeObserver: ResizeObserver | null = null
 let resizeTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -39,18 +42,21 @@ function sparkColor(){
 
 function resizeCanvas(){
   const canvas = canvasRef.value
-  if (!canvas || !process.client) return
-  const parent = document.documentElement
-  const rect = parent.getBoundingClientRect()
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
-  const width = Math.max(1, Math.round(window.innerWidth))
-  const height = Math.max(1, Math.round(window.innerHeight || rect.height))
+  if (!canvas) return
 
-  if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-    canvas.width = Math.round(width * dpr)
-    canvas.height = Math.round(height * dpr)
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+  const parent = canvas.parentElement
+  if (!parent) return
+
+  const { width, height } = parent.getBoundingClientRect()
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const nextWidth = Math.max(1, Math.round(width * dpr))
+  const nextHeight = Math.max(1, Math.round(height * dpr))
+
+  if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+    canvas.width = nextWidth
+    canvas.height = nextHeight
+    canvas.style.width = `${Math.round(width)}px`
+    canvas.style.height = `${Math.round(height)}px`
   }
 
   ctx = canvas.getContext('2d')
@@ -72,11 +78,12 @@ function easeFunc(t: number){
 }
 
 function draw(timestamp: number){
-  if (!ctx || !canvasRef.value) return
+  const canvas = canvasRef.value
+  if (!canvas || !ctx) return
 
-  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  sparks.value = sparks.value.filter(spark => {
+  sparksRef.value = sparksRef.value.filter(spark => {
     const elapsed = timestamp - spark.startTime
     if (elapsed >= duration) return false
 
@@ -102,65 +109,73 @@ function draw(timestamp: number){
   })
 
   ctx.globalAlpha = 1
-
-  if (sparks.value.length) raf = requestAnimationFrame(draw)
-  else raf = 0
+  animationId = requestAnimationFrame(draw)
 }
 
-function spawn(x: number, y: number){
-  const now = performance.now()
-  for (let i = 0; i < sparkCount; i++) {
-    sparks.value.push({
-      x,
-      y,
-      angle: (Math.PI * 2 * i) / sparkCount,
-      startTime: now
-    })
-  }
-  if (!raf) raf = requestAnimationFrame(draw)
-}
-
-function onPointerDown(e: PointerEvent){
+function handleClick(e: MouseEvent){
   if (reduced()) return
-  spawn(e.clientX, e.clientY)
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  const now = performance.now()
+
+  const newSparks = Array.from({ length: sparkCount }, (_, i) => ({
+    x,
+    y,
+    angle: (2 * Math.PI * i) / sparkCount,
+    startTime: now
+  }))
+
+  sparksRef.value.push(...newSparks)
 }
 
 onMounted(() => {
   if (!process.client || reduced()) return
+  const canvas = canvasRef.value
+  if (!canvas) return
 
   resizeCanvas()
-  window.addEventListener('pointerdown', onPointerDown, { passive: true })
-  window.addEventListener('resize', resizeCanvas)
+  animationId = requestAnimationFrame(draw)
+
+  const parent = canvas.parentElement
+  if (!parent) return
 
   resizeObserver = new ResizeObserver(() => {
     if (resizeTimeout) clearTimeout(resizeTimeout)
     resizeTimeout = setTimeout(resizeCanvas, 100)
   })
-  resizeObserver.observe(document.documentElement)
+  resizeObserver.observe(parent)
 })
 
 onBeforeUnmount(() => {
-  if (!process.client) return
-  window.removeEventListener('pointerdown', onPointerDown)
-  window.removeEventListener('resize', resizeCanvas)
+  if (animationId) cancelAnimationFrame(animationId)
   if (resizeObserver) resizeObserver.disconnect()
   if (resizeTimeout) clearTimeout(resizeTimeout)
-  if (raf) cancelAnimationFrame(raf)
 })
 </script>
 
 <style scoped>
-.clickSpark {
+.clickSparkWrap {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+}
+
+.clickSparkCanvas {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
+  display: block;
+  user-select: none;
   pointer-events: none;
   z-index: 9997;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .clickSpark {
+  .clickSparkCanvas {
     display: none;
   }
 }
