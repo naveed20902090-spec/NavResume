@@ -1143,23 +1143,23 @@ onBeforeUnmount(() => {
   height: 100%;
   overflow: hidden;
   touch-action: none;
-  background: #120f17;
+  background: transparent;
 }
 
 .etherShell :deep(canvas) {
   width: 100% !important;
   height: 100% !important;
   display: block;
-  opacity: 0.95;
-  transform: scale(1.04);
+  opacity: 1;
+  transform: none;
 }
 
 .etherShell.is-light {
-  background: #f4f1fb;
+  background: transparent;
 }
 
 .etherShell.is-light :deep(canvas) {
-  opacity: 0.82;
+  opacity: 0.9;
 }
 
 @media (prefers-reduced-motion: reduce) {

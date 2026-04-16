@@ -66,40 +66,10 @@ body{
   transition: background-color .2s ease, color .2s ease;
 }
 
-/* Cinematic grain (subtle, premium depth). */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-  background-image: var(--grain);
-  background-repeat: repeat;
-  opacity: .22;
-  mix-blend-mode: overlay;
-}
-
+/* Background overlays removed so LiquidEther remains the only ambient layer. */
+body::before,
 body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-  background:
-    radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--fg) 9%, transparent) 0, transparent 32%),
-    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--fg) 7%, transparent) 0, transparent 30%),
-    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--fg) 5%, transparent) 0, transparent 42%),
-    linear-gradient(180deg, color-mix(in srgb, var(--bg) 72%, transparent) 0%, transparent 22%, transparent 76%, color-mix(in srgb, var(--bg) 72%, transparent) 100%);
-  opacity: .78;
-}
-
-/* Light mode tuning: prevent "white wash" from overlay blending. */
-html[data-theme="light"] body::before{
-  opacity: 0;
-  mix-blend-mode: normal;
-}
-html[data-theme="light"] body::after{
-  opacity: .32;
+  content:none;
 }
 
 /* Keep app content above grain. */
