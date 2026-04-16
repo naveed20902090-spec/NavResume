@@ -14,6 +14,13 @@
         <div class="k dim2 kicker">{{ site.about.kicker }}</div>
         <h1 class="k title h1">{{ site.about.headline }}</h1>
         <p class="k dim lead">{{ site.description }}</p>
+
+        <div class="introStats">
+          <div v-for="stat in aboutStats" :key="stat.label" class="statCard">
+            <div class="k dim2">{{ stat.label }}</div>
+            <div class="k statValue">{{ stat.value }}</div>
+          </div>
+        </div>
       </div>
 
       <div class="luxDivider" data-line />
@@ -148,6 +155,12 @@ const specialties = [
   'Color grading'
 ]
 
+const aboutStats = [
+  { label: 'EDITING APPROACH', value: 'STORY FIRST' },
+  { label: 'PRIMARY STRENGTH', value: 'PACING + SOUND' },
+  { label: 'WORKING STYLE', value: 'REMOTE + FAST' }
+]
+
 function onSpot(e: MouseEvent){
   const el = e.currentTarget as HTMLElement | null
   if (!el) return
@@ -173,6 +186,9 @@ function offSpot(e: MouseEvent){
 .kicker{ font-size: 13px; margin-bottom: 14px; }
 .h1{ font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin: 0 0 12px; }
 .lead{ max-width: 720px; line-height: 1.8; font-size: 16px; margin: 0; text-transform: none; letter-spacing: 0.01em; }
+.introStats{ margin-top: 22px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 860px; }
+.statCard{ border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); padding-top: 12px; display:flex; flex-direction:column; gap: 8px; }
+.statValue{ font-size: calc(var(--fs) * 1.08); }
 
 .section{ margin-top: 40px; margin-bottom: 40px; }
 .h2{ font-size: 24px; margin: 0 0 18px; }
@@ -203,6 +219,7 @@ function offSpot(e: MouseEvent){
 .connectRow a.ctaBtn{ border-color: var(--strokeHi); }
 
 @media (max-width: 1024px){
+  .introStats{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
   .beyond{ grid-template-columns: 1fr; }
 }

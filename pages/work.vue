@@ -11,9 +11,11 @@
     <section class="body">
       <!-- Header -->
       <div class="head" data-reveal>
-        <div>
+        <div class="headCopy">
+          <div class="k dim2 headKicker">SELECTED EDITS • CASE-STUDY ENERGY</div>
           <div class="k title h1">Work</div>
           <div class="k dim">{{ shown.length }} {{ mode==='best' ? 'featured' : 'total' }} projects</div>
+          <p class="k dim lead">A tighter view of montage work, architectural films, and retention-focused edits built to feel premium before a client even presses play.</p>
         </div>
 
         <div class="toggle" data-reveal>
@@ -30,12 +32,14 @@
           v-for="p in shown"
           :key="p.id"
           class="card luxSpot"
+          :class="{ featured: p.featuredRank === 1, premium: typeof p.featuredRank === 'number' }"
           :to="`/project/${p.id}`"
           @mousemove="onSpot"
           @mouseleave="offSpot"
         >
           <div class="thumb">
             <img :src="p.media.src" :alt="p.media.alt" loading="lazy" decoding="async" />
+            <div class="thumbShade"></div>
             <div v-if="typeof p.featuredRank === 'number'" class="best k">Best #{{ p.featuredRank }}</div>
             <div class="open k dim2">( OPEN )</div>
           </div>
@@ -122,7 +126,10 @@ function offSpot(e: MouseEvent){
 .body{ flex:1; padding-top: 6vh; padding-bottom: 6vh; }
 
 .head{ display:flex; justify-content:space-between; align-items:flex-end; gap: 18px; flex-wrap:wrap; margin-bottom: 18px; }
+.headCopy{ max-width: 760px; }
+.headKicker{ margin-bottom: 10px; }
 .h1{ font-size: 32px; margin-bottom: 8px; }
+.lead{ margin-top: 14px; max-width: 62ch; line-height: 1.7; text-transform:none; letter-spacing: 0.01em; }
 
 .toggle{ display:flex; gap: 10px; flex-wrap:wrap; }
 .tbtn{
@@ -136,11 +143,15 @@ function offSpot(e: MouseEvent){
 .tbtn:hover{ opacity: 1; }
 
 .grid{ margin-top: 22px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.card{ border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 74%, transparent); overflow:hidden; }
+.card{ border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 74%, transparent); overflow:hidden; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.card:hover{ transform: translateY(-4px); border-color: color-mix(in srgb, var(--fg) 18%, var(--bg)); }
+.card.featured{ grid-column: span 2; }
+.card.premium{ box-shadow: 0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset, 0 16px 48px color-mix(in srgb, var(--fg) 4%, transparent); }
 
 .thumb{ position:relative; aspect-ratio: 16/9; border-bottom: 1px solid var(--line); overflow:hidden; }
 .thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter: grayscale(1) contrast(1.06) brightness(0.98); transition: filter .25s ease; }
 .card:hover .thumb img{ filter: grayscale(0.15) contrast(1.02) brightness(1.02); }
+.thumbShade{ position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.08), transparent 34%, rgba(0,0,0,.42)); pointer-events:none; }
 .best{ position:absolute; top: 10px; left: 10px; padding: 6px 10px; border: 1px solid var(--strokeHi); background: var(--bg); font-size: 11px; }
 .open{ position:absolute; right: 10px; bottom: 10px; padding: 6px 10px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(6px); }
 
@@ -158,6 +169,7 @@ function offSpot(e: MouseEvent){
 
 @media (max-width: 1024px){
   .grid{ grid-template-columns: 1fr; }
+  .card.featured{ grid-column: span 1; }
   .top{ flex-direction:column; align-items:flex-start; }
   .tags{ justify-content:flex-start; }
 }

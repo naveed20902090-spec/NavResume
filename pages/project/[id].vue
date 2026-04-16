@@ -20,6 +20,10 @@
       </div>
       <p class="p lead" data-reveal>{{ project.desc }}</p>
 
+      <div class="factStrip" data-reveal>
+        <span v-for="fact in projectFacts" :key="fact" class="k dim2 factChip">{{ fact }}</span>
+      </div>
+
       <div class="player" data-reveal>
         <button class="switch left" @click="goPrev" :aria-label="'Previous project'">( ‹ )</button>
         <button class="switch right" @click="goNext" :aria-label="'Next project'">( › )</button>
@@ -156,6 +160,11 @@ const timeline = computed(() => {
   ]
 })
 
+const projectFacts = computed(() => {
+  const tone = isArchitecture.value ? 'CINEMATIC SPACE STORYTELLING' : isGaming.value ? 'HIGH-RETENTION MONTAGE PACING' : 'STRUCTURE + POLISH'
+  return [project.value.madeFor.toUpperCase(), `${project.value.appsUsed.length} TOOL STACK`, tone]
+})
+
 // Audio controls (surface a mute toggle at the top of the project page)
 const { enabled, label: audioLabel, toggle, setEnabled } = useAudio()
 const userToggledAudio = ref(false)
@@ -290,6 +299,17 @@ function jumpTo(i:number){
   line-height: 1.65;
   font-size: calc(var(--fs) * 1.02);
 }
+.factStrip{
+  margin: 0 0 18px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+.factChip{
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  padding: 8px 10px;
+}
 
 .topBar{
   margin-top: 10px;
@@ -311,9 +331,12 @@ function jumpTo(i:number){
 .player{
   position:relative;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 3.5%, transparent), color-mix(in srgb, var(--bg) 94%, transparent));
   padding: 12px;
   overflow: visible;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
+    0 18px 60px color-mix(in srgb, var(--fg) 4%, transparent);
 }
 .ratio{
   position:relative;

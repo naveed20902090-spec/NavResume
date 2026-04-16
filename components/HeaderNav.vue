@@ -189,8 +189,18 @@ watch(() => route.path, () => {
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap: 6px;
+  gap: 8px;
   padding-top: 18px;
+}
+.topNav::before{
+  content:"";
+  position:absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 14px;
+  background: color-mix(in srgb, var(--fg) 18%, transparent);
+  transform: translateX(-50%);
 }
 .topItem{
   font-size: calc(var(--fs) * 1.35);
@@ -198,8 +208,14 @@ watch(() => route.path, () => {
   letter-spacing: var(--ls);
   opacity: .72;
   box-shadow: none;
+  padding: 2px 0;
+  transition: opacity .18s ease, transform .18s ease, text-shadow .18s ease;
 }
-.topItem.hot{ opacity: 1; }
+.topItem.hot{
+  opacity: 1;
+  transform: translateY(-1px);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--fg) 18%, transparent);
+}
 .topItem:hover,
 .topItem:focus,
 .topItem:focus-visible{ box-shadow:none !important; }
@@ -211,8 +227,16 @@ watch(() => route.path, () => {
   align-items:center;
   justify-content:center;
   gap: 32px;
-  padding-top: 14px;
+  padding: 14px 22px;
   flex-wrap:wrap;
+  width: fit-content;
+  margin: 0 auto;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4.5%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
+    0 12px 40px color-mix(in srgb, var(--fg) 3%, transparent);
 }
 .rowItem{
   font-size: calc(var(--fs) * 1.18);
@@ -221,12 +245,17 @@ watch(() => route.path, () => {
   opacity: .72;
   box-shadow: none;
   position:relative;
+  transition: opacity .18s ease, transform .18s ease, text-shadow .18s ease;
 }
 /* Always show parentheses around items */
 .rowItem::before{ content:"( "; opacity: .9; }
 .rowItem::after{ content:" )"; opacity: .9; }
 
-.rowItem.hot{ opacity: 1; }
+.rowItem.hot{
+  opacity: 1;
+  transform: translateY(-1px);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--fg) 16%, transparent);
+}
 .rowItem:hover,
 .rowItem:focus,
 .rowItem:focus-visible{ box-shadow:none !important; }
@@ -237,6 +266,6 @@ watch(() => route.path, () => {
 
 @media (max-width: 768px){
   .hdr{ min-height: 64px; }
-  .rowNav{ gap: 18px; }
+  .rowNav{ gap: 18px; padding: 12px 14px; }
 }
 </style>

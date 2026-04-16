@@ -14,6 +14,10 @@
         <div class="k dim2 kicker">{{ site.contact.kicker }}</div>
         <h1 class="k title h1">{{ site.contact.headline }}</h1>
         <p class="k dim lead">{{ site.contact.cta }}</p>
+
+        <div class="briefChips">
+          <span v-for="chip in briefChips" :key="chip" class="k dim2 briefChip">{{ chip }}</span>
+        </div>
       </div>
 
       <div class="luxDivider" data-line />
@@ -134,6 +138,14 @@ import { projects } from '~/composables/useProjects'
 
 const total = computed(() => projects.length)
 
+const briefChips = [
+  'REFERENCES',
+  'DELIVERABLES',
+  'DEADLINE',
+  'PLATFORM',
+  'BUDGET RANGE'
+]
+
 const form = reactive({
   name: '',
   email: '',
@@ -176,6 +188,8 @@ function offSpot(e: MouseEvent){
 .kicker{ font-size: 13px; margin-bottom: 14px; }
 .h1{ font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin: 0 0 12px; }
 .lead{ max-width: 720px; line-height: 1.8; font-size: 16px; margin: 0; text-transform:none; letter-spacing: 0.01em; }
+.briefChips{ margin-top: 22px; display:flex; flex-wrap:wrap; gap: 10px; }
+.briefChip{ border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); background: color-mix(in srgb, var(--bg) 90%, transparent); padding: 8px 10px; }
 
 .cols{ margin-top: 26px; display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; }
 .h2{ font-size: 20px; margin-bottom: 14px; }

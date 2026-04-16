@@ -8,29 +8,79 @@
       @contact="navigateTo('/contact')"
     />
 
-    <!-- HERO (Figma-style) -->
     <section class="hero" aria-label="Intro" data-reveal>
-      <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
-
-      <h1 class="heroTitle">{{ site.hero.headline }}</h1>
-
-      <p class="heroDesc">{{ site.hero.sub }}</p>
-
-      <div class="pillRow" aria-label="Services">
-        <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
+      <div class="heroAmbient" aria-hidden="true">
+        <span class="glow glowA"></span>
+        <span class="glow glowB"></span>
+        <span class="glow glowC"></span>
       </div>
 
-      <div class="heroActions" aria-label="Primary actions">
-        <button class="heroBtn primary" type="button" @click="openListing('all')">
-          <span class="k">VIEW WORK</span>
-          <span class="arrow" aria-hidden="true">→</span>
-        </button>
+      <div class="heroGrid">
+        <div class="heroCopy">
+          <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
 
-        <button class="heroBtn" type="button" @click="navigateTo('/contact')">
-          <span class="k">GET IN TOUCH</span>
-        </button>
+          <div class="heroBadgeRow" aria-label="Positioning">
+            <span class="k dim2 heroBadge">AVAILABLE FOR FREELANCE + RETAINERS</span>
+            <span class="k dim2 heroBadge">BASED IN {{ site.location.toUpperCase() }}</span>
+          </div>
+
+          <h1 class="heroTitle title">{{ site.hero.headline }}</h1>
+
+          <p class="heroDesc">{{ site.hero.sub }}</p>
+
+          <div class="pillRow" aria-label="Services">
+            <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
+          </div>
+
+          <div class="heroActions" aria-label="Primary actions">
+            <button class="heroBtn primary" type="button" @click="openListing('all')">
+              <span class="k">VIEW WORK</span>
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+
+            <button class="heroBtn" type="button" @click="navigateTo('/contact')">
+              <span class="k">GET IN TOUCH</span>
+            </button>
+          </div>
+
+          <div class="heroProofRow" aria-label="Proof points">
+            <div v-for="stat in heroStats" :key="stat.label" class="heroStat">
+              <div class="k dim2">{{ stat.label }}</div>
+              <div class="k">{{ stat.value }}</div>
+            </div>
+          </div>
+        </div>
+
+        <NuxtLink class="heroFeature luxSpot" :to="`/project/${featuredProject.id}`" data-cursor>
+          <div class="heroFeatureMedia">
+            <img :src="featuredProject.media.src" :alt="featuredProject.media.alt" loading="eager" decoding="async" />
+            <div class="heroFeatureShade" aria-hidden="true"></div>
+            <div class="heroFeatureOverlay">
+              <span class="k dim2">FEATURED CASE</span>
+              <span class="k">( OPEN )</span>
+            </div>
+          </div>
+
+          <div class="heroFeatureBody">
+            <div class="heroFeatureTop">
+              <div>
+                <div class="k">{{ featuredProject.title }}</div>
+                <div class="k dim2">{{ featuredProject.badge }}</div>
+              </div>
+              <div class="k dim2 heroFeatureRank">{{ String(featuredProject.featuredRank ?? 1).padStart(2, '0') }}</div>
+            </div>
+
+            <p class="k dim heroFeatureDesc">{{ featuredProject.desc }}</p>
+
+            <div class="heroFeatureTags">
+              <span v-for="tag in featuredProject.tags" :key="tag" class="k dim2 heroFeatureTag">{{ tag }}</span>
+            </div>
+          </div>
+        </NuxtLink>
       </div>
     </section>
+
+    <div class="luxDivider heroDivider" data-line />
 
     <ProjectStage v-model="idx" :projects="projects" />
 
@@ -93,6 +143,16 @@ const idx = ref(0)
 const listingOpen = ref(false)
 const listingMode = ref<'all'|'best'>('all')
 const year = String(new Date().getFullYear())
+
+const featuredProject = computed(() => {
+  return projects.find(p => p.id === 'showreel') ?? projects.find(p => p.featuredRank === 1) ?? projects[0]
+})
+
+const heroStats = computed(() => [
+  { label: 'SELECTED WORK', value: `${String(projects.length).padStart(2, '0')} PROJECTS` },
+  { label: 'FOCUS', value: 'CINEMATIC + RETENTION' },
+  { label: 'DELIVERY', value: 'REMOTE • FAST REPLIES' }
+])
 
 const listingEl = ref<HTMLElement | null>(null)
 const listingInner = ref<HTMLElement | null>(null)
@@ -260,26 +320,89 @@ function leaveListing(el: Element, done: () => void){
 
 <style scoped>
 .hero{
+  position: relative;
   margin-top: 14px;
-  width: min(980px, 100%);
+  width: min(1160px, 100%);
+  padding: 30px;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), color-mix(in srgb, var(--bg) 96%, transparent));
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
+    0 28px 90px color-mix(in srgb, var(--fg) 4%, transparent);
+}
+.heroAmbient{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.glow{
+  position:absolute;
+  border-radius:999px;
+  filter: blur(36px);
+  opacity: .45;
+}
+.glowA{
+  width: 340px;
+  height: 340px;
+  top: -120px;
+  left: -40px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+.glowB{
+  width: 300px;
+  height: 300px;
+  right: -70px;
+  top: 12%;
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+.glowC{
+  width: 280px;
+  height: 280px;
+  left: 38%;
+  bottom: -160px;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+.heroGrid{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 28px;
+  align-items:end;
+}
+.heroCopy{
+  max-width: 720px;
 }
 .heroKicker{
   opacity: .75;
 }
+.heroBadgeRow{
+  margin-top: 18px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+.heroBadge{
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  padding: 8px 12px;
+}
 .heroTitle{
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   font: inherit;
   text-transform: none;
   letter-spacing: 0;
-  line-height: 1.06;
+  line-height: .98;
   font-weight: 600;
-  /* Figma-style big monospace hero */
-  font-size: clamp(44px, 5.4vw, 78px);
+  font-size: clamp(48px, 6.2vw, 92px);
   color: var(--fg);
+  max-width: 11ch;
 }
 .heroDesc{
   margin: 18px 0 0;
-  max-width: 62ch;
+  max-width: 58ch;
   font-size: calc(var(--fs) * 1.02);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -305,6 +428,19 @@ function leaveListing(el: Element, done: () => void){
   flex-wrap:wrap;
   gap: 18px;
 }
+.heroProofRow{
+  margin-top: 26px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.heroStat{
+  border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  padding-top: 12px;
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+}
 .heroBtn{
   border: 1px solid var(--line);
   padding: 16px 22px;
@@ -313,7 +449,8 @@ function leaveListing(el: Element, done: () => void){
   align-items:center;
   justify-content:center;
   gap: 12px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 3.5%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+  backdrop-filter: blur(10px);
   transition: opacity .18s ease, border-color .18s ease, transform .14s ease;
 }
 .heroBtn.primary{
@@ -330,9 +467,85 @@ function leaveListing(el: Element, done: () => void){
   font-size: 1.05em;
   opacity: .85;
 }
+.heroFeature{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), color-mix(in srgb, var(--bg) 95%, transparent));
+  min-height: 100%;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
+    0 20px 60px color-mix(in srgb, var(--fg) 4%, transparent);
+}
+.heroFeatureMedia{
+  position:relative;
+  aspect-ratio: 4 / 3;
+  overflow:hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+}
+.heroFeatureMedia img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  filter: grayscale(.18) contrast(1.04) brightness(.86);
+}
+.heroFeatureShade{
+  position:absolute;
+  inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.08), transparent 35%, rgba(0,0,0,.45));
+}
+.heroFeatureOverlay{
+  position:absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap: 12px;
+}
+.heroFeatureBody{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+  padding: 18px;
+}
+.heroFeatureTop{
+  display:flex;
+  justify-content:space-between;
+  gap: 18px;
+  align-items:flex-start;
+}
+.heroFeatureRank{
+  opacity: .62;
+}
+.heroFeatureDesc{
+  margin: 0;
+  line-height: 1.65;
+  text-transform:none;
+  letter-spacing: .01em;
+}
+.heroFeatureTags{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+}
+.heroFeatureTag{
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  padding: 7px 9px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+}
+.heroDivider{
+  margin-top: 24px;
+}
 
 @media (max-width: 768px){
-  .heroTitle{ font-size: clamp(34px, 9vw, 56px); }
+  .hero{ padding: 22px 18px; }
+  .heroGrid{ grid-template-columns: 1fr; }
+  .heroProofRow{ grid-template-columns: 1fr; }
+  .heroTitle{ font-size: clamp(34px, 9vw, 64px); max-width: none; }
   .heroBtn{ min-width: 0; width: 100%; justify-content:space-between; }
 }
 

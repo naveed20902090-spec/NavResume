@@ -54,7 +54,7 @@ html[data-theme="light"]{
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
-html{ color-scheme: light dark; }
+html{ color-scheme: light dark; scroll-behavior: smooth; }
 body{
   margin:0;
   background:var(--bg);
@@ -79,10 +79,27 @@ body::before{
   mix-blend-mode: overlay;
 }
 
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--fg) 9%, transparent) 0, transparent 32%),
+    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--fg) 7%, transparent) 0, transparent 30%),
+    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--fg) 5%, transparent) 0, transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 72%, transparent) 0%, transparent 22%, transparent 76%, color-mix(in srgb, var(--bg) 72%, transparent) 100%);
+  opacity: .78;
+}
+
 /* Light mode tuning: prevent "white wash" from overlay blending. */
 html[data-theme="light"] body::before{
   opacity: 0;
   mix-blend-mode: normal;
+}
+html[data-theme="light"] body::after{
+  opacity: .32;
 }
 
 /* Keep app content above grain. */
@@ -93,6 +110,7 @@ html[data-theme="light"] body::before{
 .panel,
 .plaque,
 .plaqueRow .plaque{
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--fg) 3.5%, transparent), transparent 30%, transparent 100%);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--strokeLo) 65%, transparent) inset;
 }
 
@@ -222,6 +240,7 @@ button.link:active{
   padding: var(--padY) var(--padX);
   display:flex;
   flex-direction:column;
+  gap: 10px;
 }
 
 /* Type */

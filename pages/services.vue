@@ -11,8 +11,16 @@
     <section class="body">
       <!-- Header -->
       <div class="head" data-reveal>
+        <div class="k dim2 headKicker">POSITIONING • PACKAGES • DELIVERY</div>
         <h1 class="k title h1">Services</h1>
         <p class="k dim lead">Premium video editing services for creators and studios who want cinematic polish and retention-first structure.</p>
+
+        <div class="trustRow">
+          <div v-for="item in trustItems" :key="item.label" class="trustCard">
+            <div class="k dim2">{{ item.label }}</div>
+            <div class="k">{{ item.value }}</div>
+          </div>
+        </div>
       </div>
 
       <div class="luxDivider" data-line />
@@ -109,6 +117,12 @@ import { projects } from '~/composables/useProjects'
 
 const total = computed(() => projects.length)
 
+const trustItems = [
+  { label: 'DELIVERY STYLE', value: 'CLEAN + CINEMATIC' },
+  { label: 'BEST FIT', value: 'CREATORS + STUDIOS' },
+  { label: 'FORMAT RANGE', value: 'LONG + SHORT FORM' }
+]
+
 function onSpot(e: MouseEvent){
   const el = e.currentTarget as HTMLElement | null
   if (!el) return
@@ -130,8 +144,11 @@ function offSpot(e: MouseEvent){
 <style scoped>
 .body{ flex:1; padding-top: 6vh; padding-bottom: 6vh; }
 .head{ margin-bottom: 18px; }
+.headKicker{ margin-bottom: 12px; }
 .h1{ font-size: 32px; margin: 0 0 10px; }
 .lead{ max-width: 760px; line-height: 1.7; text-transform:none; letter-spacing:0.01em; margin: 0; }
+.trustRow{ margin-top: 22px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 920px; }
+.trustCard{ border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); padding-top: 12px; display:flex; flex-direction:column; gap: 8px; }
 
 .grid{ margin-top: 26px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
 .card{ border: 1px solid var(--strokeLo); padding: 18px; background: color-mix(in srgb, var(--bg) 74%, transparent); }
@@ -158,6 +175,7 @@ function offSpot(e: MouseEvent){
 .cta a.ctaBtn{ border-color: var(--strokeHi); }
 
 @media (max-width: 1024px){
+  .trustRow{ grid-template-columns: 1fr; }
   .grid{ grid-template-columns: 1fr; }
   .pkgGrid{ grid-template-columns: 1fr; }
   .process{ grid-template-columns: 1fr; }
