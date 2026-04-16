@@ -51,7 +51,6 @@ function initLiquidEther(){
   const colors = getThemeColors()
   const rafRef = { current: null as number | null }
   const resizeObserverRef = { current: null as ResizeObserver | null }
-  const intersectionObserverRef = { current: null as IntersectionObserver | null }
   const isVisibleRef = { current: true }
   const resizeRafRef = { current: null as number | null }
 
@@ -1017,7 +1016,7 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
       window.addEventListener('resize', this.resizeBound)
       this.onVisibility = () => {
         if (document.hidden) this.pause()
-        else if (isVisibleRef.current) this.start()
+        else this.start()
       }
       document.addEventListener('visibilitychange', this.onVisibility)
     }
@@ -1091,15 +1090,9 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
   })
   webgl.start()
 
-  const io = new IntersectionObserver(entries => {
-    const entry = entries[0]
-    const visible = entry.isIntersecting && entry.intersectionRatio > 0
-    isVisibleRef.current = visible
-    if (visible && !document.hidden) webgl.start()
-    else webgl.pause()
-  }, { threshold: [0, 0.01, 0.1] })
-  io.observe(container)
-  intersectionObserverRef.current = io
+  window.setTimeout(() => {
+    if (!document.hidden) webgl.start()
+  }, 120)
 
   const ro = new ResizeObserver(() => {
     if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current)
@@ -1112,7 +1105,6 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current)
     try { resizeObserverRef.current?.disconnect() } catch {}
-    try { intersectionObserverRef.current?.disconnect() } catch {}
     webgl.dispose()
     container.innerHTML = ''
   }
