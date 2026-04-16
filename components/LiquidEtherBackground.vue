@@ -5,17 +5,30 @@
 <script setup lang="ts">
 import { useTheme } from '~/composables/useTheme'
 
-type Blob = {
+type Orb = {
   x: number
   y: number
   vx: number
   vy: number
+  baseR: number
   r: number
   color: string
+  phase: number
+  drift: number
 }
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const { theme } = useTheme()
+
+const mouseForce = 16
+const cursorSize = 80
+const isViscous = true
+const viscous = 100
+const autoDemo = true
+const autoSpeed = 0.5
+const autoIntensity = 2.2
+const isBounce = false
+const resolution = 0.5
 
 let ctx: CanvasRenderingContext2D | null = null
 let raf = 0
@@ -24,8 +37,8 @@ let height = 0
 let dpr = 1
 let tick = 0
 
-const mouse = reactive({ x: 0, y: 0, active: false })
-const blobs: Blob[] = []
+const mouse = reactive({ x: 0, y: 0, tx: 0, ty: 0, active: false })
+const orbs: Orb[] = []
 
 function reduce(){
   if (!process.client) return true
@@ -34,22 +47,32 @@ function reduce(){
 
 function palette(){
   return theme.value === 'light'
-    ? ['#000000', '#5227ff', '#9e8dff']
-    : ['#ffffff', '#5227ff', '#9e8dff']
+    ? ['#ffffff', '#5227FF', '#d7ceff']
+    : ['#5227FF', '#ffffff', '#d7ceff']
 }
 
-function resetBlobs(){
-  blobs.length = 0
+function alphaHex(v: number){
+  return Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')
+}
+
+function resetOrbs(){
+  orbs.length = 0
   const colors = palette()
-  const count = reduce() ? 4 : 7
+  const base = Math.min(width, height)
+  const count = reduce() ? 4 : 6
+
   for (let i = 0; i < count; i++) {
-    blobs.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.22,
-      vy: (Math.random() - 0.5) * 0.18,
-      r: Math.min(width, height) * (0.12 + Math.random() * 0.12),
-      color: colors[i % colors.length]
+    const baseR = base * (0.18 + i * 0.022)
+    orbs.push({
+      x: width * (0.18 + (i / Math.max(1, count - 1)) * 0.64),
+      y: height * (0.28 + Math.sin(i * 1.4) * 0.09),
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.14,
+      baseR,
+      r: baseR,
+      color: colors[i % colors.length],
+      phase: Math.random() * Math.PI * 2,
+      drift: 0.4 + Math.random() * 0.8
     })
   }
 }
@@ -57,7 +80,7 @@ function resetBlobs(){
 function resize(){
   const el = canvas.value
   if (!el || !process.client) return
-  dpr = Math.min(window.devicePixelRatio || 1, 2)
+  dpr = Math.min((window.devicePixelRatio || 1) * resolution, 1.5)
   width = window.innerWidth
   height = window.innerHeight
   el.width = Math.round(width * dpr)
@@ -67,12 +90,34 @@ function resize(){
   ctx = el.getContext('2d')
   if (!ctx) return
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  resetBlobs()
+  resetOrbs()
+}
+
+function drawOrb(o: Orb, alpha = 1){
+  if (!ctx) return
+  const grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r)
+  const inner = theme.value === 'light' ? 0.1 : 0.22
+  const mid = theme.value === 'light' ? 0.05 : 0.11
+  grad.addColorStop(0, `${o.color}${alphaHex(inner * alpha)}`)
+  grad.addColorStop(0.48, `${o.color}${alphaHex(mid * alpha)}`)
+  grad.addColorStop(1, `${o.color}00`)
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+function updateAutoCursor(){
+  if (!autoDemo || mouse.active) return
+  const t = tick * autoSpeed
+  const intensity = autoIntensity
+  mouse.tx = width * (0.5 + Math.cos(t * 0.63) * 0.22 * intensity / 2.2)
+  mouse.ty = height * (0.46 + Math.sin(t * 0.91) * 0.16 * intensity / 2.2)
 }
 
 function onPointerMove(e: PointerEvent){
-  mouse.x = e.clientX
-  mouse.y = e.clientY
+  mouse.tx = e.clientX
+  mouse.ty = e.clientY
   mouse.active = true
 }
 
@@ -80,62 +125,67 @@ function onPointerLeave(){
   mouse.active = false
 }
 
-function drawBlob(b: Blob, alpha = 1){
-  if (!ctx) return
-  const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r)
-  if (theme.value === 'light') {
-    grad.addColorStop(0, `${b.color}${Math.round(255 * 0.16 * alpha).toString(16).padStart(2, '0')}`)
-    grad.addColorStop(0.42, `${b.color}${Math.round(255 * 0.08 * alpha).toString(16).padStart(2, '0')}`)
-  } else {
-    grad.addColorStop(0, `${b.color}${Math.round(255 * 0.18 * alpha).toString(16).padStart(2, '0')}`)
-    grad.addColorStop(0.42, `${b.color}${Math.round(255 * 0.09 * alpha).toString(16).padStart(2, '0')}`)
-  }
-  grad.addColorStop(1, 'transparent')
-  ctx.fillStyle = grad
-  ctx.beginPath()
-  ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
-  ctx.fill()
-}
-
 function frame(){
   if (!ctx) return
-  tick += 0.0035
+  tick += 0.01
+  updateAutoCursor()
+
+  const ease = isViscous ? Math.max(0.05, 0.16 - viscous * 0.0008) : 0.18
+  mouse.x += (mouse.tx - mouse.x) * ease
+  mouse.y += (mouse.ty - mouse.y) * ease
+
   ctx.clearRect(0, 0, width, height)
   ctx.globalCompositeOperation = theme.value === 'light' ? 'multiply' : 'screen'
 
-  const force = reduce() ? 8 : 16
-  blobs.forEach((b, i) => {
-    const driftX = Math.sin(tick * (0.8 + i * 0.14)) * 0.08
-    const driftY = Math.cos(tick * (0.65 + i * 0.12)) * 0.08
-    b.vx += driftX * 0.002
-    b.vy += driftY * 0.002
+  for (let i = 0; i < orbs.length; i++) {
+    const o = orbs[i]
+    const sway = Math.sin(tick * (0.7 + o.drift) + o.phase)
+    const rise = Math.cos(tick * (0.52 + o.drift * 0.6) + o.phase)
 
-    if (mouse.active) {
-      const dx = b.x - mouse.x
-      const dy = b.y - mouse.y
-      const dist = Math.sqrt(dx * dx + dy * dy) + 0.001
-      const pull = Math.max(0, (380 - dist) / 380)
-      const sign = theme.value === 'light' ? -1 : 1
-      b.vx += (dx / dist) * pull * force * 0.0025 * sign
-      b.vy += (dy / dist) * pull * force * 0.0022 * sign
+    o.vx += sway * 0.0025
+    o.vy += rise * 0.002
+
+    const dx = mouse.x - o.x
+    const dy = mouse.y - o.y
+    const dist = Math.sqrt(dx * dx + dy * dy) + 0.001
+    const influence = Math.max(0, (420 - dist) / 420)
+    const dir = theme.value === 'light' ? -1 : 1
+
+    o.vx += (dx / dist) * influence * mouseForce * 0.0042 * dir
+    o.vy += (dy / dist) * influence * mouseForce * 0.0034 * dir
+    o.r = o.baseR * (1 + influence * 0.16)
+
+    o.vx *= 0.988
+    o.vy *= 0.988
+    o.x += o.vx
+    o.y += o.vy
+
+    if (isBounce) {
+      if (o.x < o.r || o.x > width - o.r) o.vx *= -0.92
+      if (o.y < o.r || o.y > height - o.r) o.vy *= -0.92
+      o.x = Math.max(o.r, Math.min(width - o.r, o.x))
+      o.y = Math.max(o.r, Math.min(height - o.r, o.y))
+    } else {
+      if (o.x < -o.r) o.x = width + o.r
+      if (o.x > width + o.r) o.x = -o.r
+      if (o.y < -o.r) o.y = height + o.r
+      if (o.y > height + o.r) o.y = -o.r
     }
 
-    b.vx *= 0.992
-    b.vy *= 0.992
-    b.x += b.vx
-    b.y += b.vy
-
-    if (b.x < -b.r) b.x = width + b.r
-    if (b.x > width + b.r) b.x = -b.r
-    if (b.y < -b.r) b.y = height + b.r
-    if (b.y > height + b.r) b.y = -b.r
-
-    drawBlob(b)
-  })
-
-  if (mouse.active) {
-    drawBlob({ x: mouse.x, y: mouse.y, vx: 0, vy: 0, r: reduce() ? 120 : 160, color: theme.value === 'light' ? '#000000' : '#ffffff' }, 0.75)
+    drawOrb(o)
   }
+
+  drawOrb({
+    x: mouse.x,
+    y: mouse.y,
+    vx: 0,
+    vy: 0,
+    baseR: cursorSize * 1.9,
+    r: cursorSize * 1.9,
+    color: theme.value === 'light' ? '#ffffff' : '#ffffff',
+    phase: 0,
+    drift: 0
+  }, 0.72)
 
   ctx.globalCompositeOperation = 'source-over'
   raf = requestAnimationFrame(frame)
@@ -143,12 +193,16 @@ function frame(){
 
 watch(theme, () => {
   if (!process.client) return
-  resetBlobs()
+  resetOrbs()
 })
 
 onMounted(() => {
   if (!process.client || reduce()) return
   resize()
+  mouse.x = width * 0.5
+  mouse.y = height * 0.5
+  mouse.tx = mouse.x
+  mouse.ty = mouse.y
   window.addEventListener('resize', resize)
   window.addEventListener('pointermove', onPointerMove, { passive: true })
   window.addEventListener('pointerleave', onPointerLeave, { passive: true })
@@ -172,7 +226,14 @@ onBeforeUnmount(() => {
   height: 100%;
   pointer-events: none;
   z-index: 0;
-  opacity: .92;
+  opacity: 1;
+  filter: blur(18px) contrast(128%) saturate(115%);
+  mix-blend-mode: normal;
+}
+
+:global(html[data-theme="light"]) .etherBg {
+  filter: blur(16px) contrast(122%) invert(1) saturate(108%);
+  opacity: .72;
 }
 
 @media (prefers-reduced-motion: reduce) {
