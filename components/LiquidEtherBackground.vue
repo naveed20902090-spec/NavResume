@@ -311,10 +311,8 @@ function initLiquidEther(){
         if (this.active) this.forceStop()
         return
       }
-      if (this.mouse.isHoverInside) {
-        if (this.active) this.forceStop()
-        return
-      }
+      // Fullscreen backgrounds keep the pointer "inside" almost always,
+      // so we do not suppress auto motion based on hover containment here.
       if (!this.active) {
         this.active = true
         this.current.copy(this.mouse.coords)
@@ -926,7 +924,7 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
     props: any
     output!: Output
     autoDriver!: AutoDriver
-    lastUserInteraction = performance.now()
+    lastUserInteraction = performance.now() - settings.autoResumeDelay - 32
     running = false
     _loop = this.loop.bind(this)
     _resize = this.resize.bind(this)
@@ -1037,6 +1035,8 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
     if (settings.resolution !== prevRes) sim.resize()
   }
 
+  Mouse.coords.set(-0.18, 0.08)
+  Mouse.coords_old.set(-0.28, 0.14)
   webgl.start()
 
   intersectionObserver = new IntersectionObserver(entries => {
