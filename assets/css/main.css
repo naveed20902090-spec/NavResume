@@ -66,6 +66,26 @@ body{
   transition: background-color .2s ease, color .2s ease;
 }
 
+::selection{
+  background:#ffffff;
+  color:#000000;
+}
+
+::-moz-selection{
+  background:#ffffff;
+  color:#000000;
+}
+
+html[data-theme="light"] ::selection{
+  background:#000000;
+  color:#ffffff;
+}
+
+html[data-theme="light"] ::-moz-selection{
+  background:#000000;
+  color:#ffffff;
+}
+
 /* Background overlays removed so LiquidEther remains the only ambient layer. */
 body::before,
 body::after{
