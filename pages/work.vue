@@ -15,7 +15,7 @@
           <div class="k dim2 headKicker">SELECTED EDITS • CASE-STUDY ENERGY</div>
           <div class="k title h1">Work</div>
           <div class="k dim">{{ shown.length }} {{ mode==='best' ? 'featured' : 'total' }} projects</div>
-          <p class="k dim lead">A tighter view of montage work, architectural films, and retention-focused edits built to feel premium before a client even presses play.</p>
+          <ScrambledText class="k dim lead" text="A tighter view of montage work, architectural films, and retention-focused edits built to feel premium before a client even presses play." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
         </div>
 
         <div class="toggle" data-reveal>
@@ -50,7 +50,7 @@
               <div class="k dim2">{{ p.badge }}</div>
             </div>
 
-            <p class="p">{{ p.desc }}</p>
+            <ScrambledText class="p" :text="p.desc" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
             <div class="meta">
               <div class="k dim2">{{ p.metaLine }}</div>
@@ -65,9 +65,7 @@
       <!-- CTA -->
       <div class="plaque luxSpot cta" data-reveal @mousemove="onSpot" @mouseleave="offSpot">
         <div class="k title" style="font-size:24px;">Have a project in mind?</div>
-        <p class="k dim" style="max-width: 520px; margin: 10px auto 0; line-height: 1.6; text-transform:none; letter-spacing:0.01em;">
-          Let’s turn your raw footage into something cinematic.
-        </p>
+        <ScrambledText class="k dim" style="max-width: 520px; margin: 10px auto 0; line-height: 1.6; text-transform:none; letter-spacing:0.01em;" text="Let’s turn your raw footage into something cinematic." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
         <div class="ctaRow">
           <a class="k ctaBtn" :href="`mailto:${site.contact.email}`">Get in touch</a>
           <a v-if="site.hero.links.upwork" class="k dim link" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">Upwork</a>

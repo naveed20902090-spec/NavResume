@@ -13,7 +13,7 @@
       <div class="head" data-reveal>
         <div class="k dim2 headKicker">POSITIONING • PACKAGES • DELIVERY</div>
         <h1 class="k title h1">Services</h1>
-        <p class="k dim lead">Premium video editing services for creators and studios who want cinematic polish and retention-first structure.</p>
+        <ScrambledText class="k dim lead" text="Premium video editing services for creators and studios who want cinematic polish and retention-first structure." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
         <div class="trustRow">
           <div v-for="item in trustItems" :key="item.label" class="trustCard">
@@ -36,7 +36,7 @@
         >
           <div class="k dim2 idx">( {{ String(i + 1).padStart(2, '0') }} )</div>
           <div class="k title st">{{ service.title }}</div>
-          <p class="k dim desc">{{ service.desc }}</p>
+          <ScrambledText class="k dim desc" :text="service.desc" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
           <div class="k dim2 sub">Deliverables:</div>
           <ul class="ul">
@@ -59,7 +59,7 @@
             @mouseleave="offSpot"
           >
             <div class="k">{{ p.title }}</div>
-            <p class="k dim desc" style="margin-top:10px;">{{ p.desc }}</p>
+            <ScrambledText class="k dim desc" style="margin-top:10px;" :text="p.desc" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
             <ul class="ul" style="margin-top: 12px;">
               <li v-for="b in p.bullets" :key="b" class="k dim li"><span class="k dim2">→</span> {{ b }}</li>
             </ul>
@@ -80,7 +80,7 @@
           >
             <div class="k dim2 big">{{ step.step }}</div>
             <div class="k" style="margin-top:8px;">{{ step.title }}</div>
-            <div class="k dim2" style="margin-top:8px; font-size:13px; line-height:1.6; text-transform:none; letter-spacing:0.01em;">{{ step.description }}</div>
+            <ScrambledText class="k dim2" style="margin-top:8px; font-size:13px; line-height:1.6; text-transform:none; letter-spacing:0.01em;" :text="step.description" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
           </div>
         </div>
       </div>
@@ -88,9 +88,7 @@
       <!-- Investment -->
       <div class="plaque luxSpot invest" data-reveal @mousemove="onSpot" @mouseleave="offSpot">
         <div class="k title" style="font-size:24px;">Investment</div>
-        <p class="k dim" style="max-width: 680px; margin: 10px auto 0; line-height: 1.7; text-transform:none; letter-spacing:0.01em;">
-          Pricing varies by scope, turnaround time, and deliverables. I’ll quote after a quick brief.
-        </p>
+        <ScrambledText class="k dim" style="max-width: 680px; margin: 10px auto 0; line-height: 1.7; text-transform:none; letter-spacing:0.01em;" text="Pricing varies by scope, turnaround time, and deliverables. I’ll quote after a quick brief." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
         <div class="cta">
           <a class="k ctaBtn" :href="`mailto:${site.contact.email}`">Request quote</a>
           <a v-if="site.hero.links.upwork" class="k dim link" :href="site.hero.links.upwork" target="_blank" rel="noreferrer">View Upwork profile</a>

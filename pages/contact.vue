@@ -13,7 +13,7 @@
       <div class="head" data-reveal>
         <div class="k dim2 kicker">{{ site.contact.kicker }}</div>
         <h1 class="k title h1">{{ site.contact.headline }}</h1>
-        <p class="k dim lead">{{ site.contact.cta }}</p>
+        <ScrambledText class="k dim lead" :text="site.contact.cta" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
         <div class="briefChips">
           <span v-for="chip in briefChips" :key="chip" class="k dim2 briefChip">{{ chip }}</span>
@@ -91,9 +91,7 @@
 
           <div class="plaque" data-reveal>
             <div class="k dim2" style="font-size: 12px;">Availability</div>
-            <p class="k" style="font-size: 14px; line-height: 1.7; text-transform:none; letter-spacing:0.01em; margin-top: 10px;">
-              {{ site.contact.availability }}
-            </p>
+            <ScrambledText class="k" style="font-size: 14px; line-height: 1.7; text-transform:none; letter-spacing:0.01em; margin-top: 10px;" :text="site.contact.availability" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
           </div>
         </div>
       </div>

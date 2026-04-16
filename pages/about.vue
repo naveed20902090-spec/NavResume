@@ -13,7 +13,7 @@
       <div class="intro" data-reveal>
         <div class="k dim2 kicker">{{ site.about.kicker }}</div>
         <h1 class="k title h1">{{ site.about.headline }}</h1>
-        <p class="k dim lead">{{ site.description }}</p>
+        <ScrambledText class="k dim lead" :text="site.description" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
         <div class="introStats">
           <div v-for="stat in aboutStats" :key="stat.label" class="statCard">
@@ -40,7 +40,7 @@
           >
             <div class="k dim2 idx">( {{ String(i + 1).padStart(2, '0') }} )</div>
             <div class="k st">{{ s.title }}</div>
-            <p class="k dim sd">{{ s.description }}</p>
+            <ScrambledText class="k dim sd" :text="s.description" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
           </div>
         </div>
       </div>
@@ -63,7 +63,7 @@
             <div class="k step">{{ step.step }}</div>
             <div>
               <div class="k wt">{{ step.title }}</div>
-              <p class="k dim wd">{{ step.description }}</p>
+              <ScrambledText class="k dim wd" :text="step.description" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
             </div>
           </div>
         </div>
@@ -77,14 +77,8 @@
 
         <div class="beyond">
           <div>
-            <p class="k dim para">
-              I started editing gaming montages in 2018—learning rhythm, pacing, and the power of a perfectly timed cut.
-              That foundation evolved into architectural showcases, brand work, and retention-first content.
-            </p>
-            <p class="k dim para">
-              Based in {{ site.location }}, working with creators and studios globally. I specialize in projects that demand precision,
-              cinematic polish, and sound design that makes every frame feel intentional.
-            </p>
+            <ScrambledText class="k dim para" text="I started editing gaming montages in 2018, learning rhythm, pacing, and the power of a perfectly timed cut. That foundation evolved into architectural showcases, brand work, and retention-first content." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
+            <ScrambledText class="k dim para" :text="`Based in ${site.location}, working with creators and studios globally. I specialize in projects that demand precision, cinematic polish, and sound design that makes every frame feel intentional.`" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
           </div>
 
           <div>
@@ -109,9 +103,7 @@
         @mouseleave="offSpot"
       >
         <div class="k title" style="font-size: 24px;">Let’s connect</div>
-        <p class="k dim" style="max-width:540px; margin: 10px auto 0; line-height:1.7;">
-          Available for freelance projects, retainer work, and studio partnerships.
-        </p>
+        <ScrambledText class="k dim" style="max-width:540px; margin: 10px auto 0; line-height:1.7;" text="Available for freelance projects, retainer work, and studio partnerships." :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
         <div class="connectRow">
           <a class="k ctaBtn" :href="`mailto:${site.contact.email}`">Email me</a>
           <a class="k dim link" :href="site.hero.links.instagram" target="_blank" rel="noreferrer">Instagram DM</a>

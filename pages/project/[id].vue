@@ -18,7 +18,7 @@
           <button class="k dim2 ctl" @click="onUserToggleAudio">( • {{ audioLabel.toUpperCase() }} )</button>
         </div>
       </div>
-      <p class="p lead" data-reveal>{{ project.desc }}</p>
+      <ScrambledText class="p lead" data-reveal :text="project.desc" :radius="40" :duration="1" :speed="1" scramble-chars="xX" />
 
       <div class="factStrip" data-reveal>
         <span v-for="fact in projectFacts" :key="fact" class="k dim2 factChip">{{ fact }}</span>
