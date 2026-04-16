@@ -284,6 +284,10 @@ function leaveListing(el: Element, done: () => void){
   gap: 0;
 }
 
+.homeFrame :deep(.stage) {
+  min-height: calc(100svh - clamp(180px, 24vh, 260px));
+}
+
 .hero {
   position: relative;
   margin: 0 auto 0;
@@ -428,7 +432,7 @@ function leaveListing(el: Element, done: () => void){
 }
 
 .heroDivider {
-  margin-top: 16px;
+  margin-top: clamp(42px, 8vh, 96px);
 }
 
 .listMode {
@@ -523,6 +527,14 @@ function leaveListing(el: Element, done: () => void){
 }
 
 @media (max-width: 768px) {
+  .homeFrame :deep(.stage) {
+    min-height: auto;
+  }
+
+  .heroDivider {
+    margin-top: 28px;
+  }
+
   .hero {
     padding: 22px 18px 20px;
   }

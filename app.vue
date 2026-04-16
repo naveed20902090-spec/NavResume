@@ -1,9 +1,9 @@
 <template>
   <div class="liquidEtherRoot" aria-hidden="true">
     <LiquidEtherBackground
-      :colors="['#5227FF', '#FF9FFC', '#B497CF']"
-      :mouse-force="10"
-      :cursor-size="55"
+      :colors="liquidEtherColors"
+      :mouse-force="liquidEtherMouseForce"
+      :cursor-size="liquidEtherCursorSize"
       :is-viscous="false"
       :viscous="30"
       :iterations-viscous="32"
@@ -11,8 +11,8 @@
       :resolution="0.5"
       :is-bounce="false"
       :auto-demo="true"
-      :auto-speed="0.1"
-      :auto-intensity="2.1"
+      :auto-speed="liquidEtherAutoSpeed"
+      :auto-intensity="liquidEtherAutoIntensity"
       :takeover-duration="0.25"
       :auto-resume-delay="3000"
       :auto-ramp-duration="0.6"
@@ -28,8 +28,19 @@
 <script setup lang="ts">
 import gsap from 'gsap'
 import { useSfx } from '~/composables/useSfx'
+import { useTheme } from '~/composables/useTheme'
 
 const route = useRoute()
+const { theme } = useTheme()
+
+const liquidEtherColors = computed(() => theme.value === 'dark'
+  ? ['#5227FF', '#D8CBFF', '#FFFFFF']
+  : ['#5227FF', '#FF9FFC', '#B497CF']
+)
+const liquidEtherMouseForce = computed(() => theme.value === 'dark' ? 14 : 10)
+const liquidEtherCursorSize = computed(() => theme.value === 'dark' ? 68 : 55)
+const liquidEtherAutoSpeed = computed(() => theme.value === 'dark' ? 0.14 : 0.1)
+const liquidEtherAutoIntensity = computed(() => theme.value === 'dark' ? 2.65 : 2.1)
 
 const layer = ref<HTMLElement | null>(null)
 const { playWhoosh } = useSfx()
