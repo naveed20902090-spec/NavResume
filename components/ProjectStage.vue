@@ -3,52 +3,38 @@
     <ArcNav side="left" :activeArc="activeArc" :label="prevLabel" @activate="prev" />
 
     <div class="center">
-      <div class="mediaWrap" ref="mediaWrap"
-        @pointerenter="onEnter"
-        @pointermove="onMove"
-        @pointerleave="onLeave"
-      >
+      <div class="mediaWrap" ref="mediaWrap" @pointerenter="onEnter" @pointermove="onMove" @pointerleave="onLeave">
         <NuxtLink class="mediaLink" :to="`/project/${current.id}`" aria-label="Open project" data-cursor-off="1">
-          <div
-            ref="stackEl"
-            class="imgStack"
-            :class="imgFxClass"
-            :data-active="hoverActive ? '1' : '0'"
-            :style="hoverStyle"
-          >
-            <!-- B&W base (always visible) -->
+          <div ref="stackEl" class="imgStack" :class="imgFxClass" :data-active="hoverActive ? '1' : '0'" :style="hoverStyle">
             <img
               class="media bw base"
               :src="currentSrc"
               :alt="currentAlt"
-              ref="baseBwImg"
               loading="eager"
               decoding="async"
               fetchpriority="high"
             />
-            <!-- Color overlay (revealed only by ripple waves) -->
             <img
               class="media color base"
               :src="currentSrc"
               alt=""
               aria-hidden="true"
-              ref="baseColorImg"
               loading="eager"
               decoding="async"
             />
+
+            <div class="hoverGloss" aria-hidden="true"></div>
+            <div class="hoverFrame" aria-hidden="true"></div>
 
             <div v-if="transitioning" ref="incomingWrap" class="incoming" aria-hidden="true">
               <img class="media bw top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
               <img class="media color top" :src="incomingSrc" alt="" aria-hidden="true" loading="eager" decoding="async" />
             </div>
-
-            <!-- Ripple rings (visual only) -->
-            <div class="ripples" aria-hidden="true"></div>
           </div>
         </NuxtLink>
+
         <a class="play" :href="current.link" target="_blank" rel="noreferrer" data-cursor>( OPEN )</a>
 
-        <!-- SVG ripple filter (used only during media transitions) -->
         <svg class="fx" width="0" height="0" aria-hidden="true" focusable="false">
           <filter id="rippleFilter" x="-20%" y="-20%" width="140%" height="140%">
             <feTurbulence ref="turb" type="turbulence" baseFrequency="0.012 0.014" numOctaves="1" seed="2" result="noise" />
@@ -83,104 +69,45 @@ import gsap from 'gsap'
 import type { Project } from '~/composables/useProjects'
 
 const props = defineProps<{ projects: Project[]; modelValue: number }>()
-const emit = defineEmits<{ (e:'update:modelValue', v:number):void }>()
+const emit = defineEmits<{ (e: 'update:modelValue', v: number): void }>()
 
 const current = computed(() => props.projects[props.modelValue] ?? props.projects[0])
 const total = computed(() => props.projects.length || 1)
-const prevLabel = computed(() => {
-  const i = (props.modelValue - 1 + total.value) % total.value
-  return String(i + 1)
-})
-const nextLabel = computed(() => {
-  const i = (props.modelValue + 1) % total.value
-  return String(i + 1)
-})
+const prevLabel = computed(() => String(((props.modelValue - 1 + total.value) % total.value) + 1))
+const nextLabel = computed(() => String(((props.modelValue + 1) % total.value) + 1))
 
 const currentSrc = ref(current.value.media.src)
 const currentAlt = ref(current.value.media.alt)
 const incomingSrc = ref('')
-const incomingAlt = ref('')
 const transitioning = ref(false)
 
-// Swap ripple distortion during project media swap.
 const rippleActive = ref(false)
 const turb = ref<SVGFETurbulenceElement | null>(null)
 const disp = ref<SVGFEDisplacementMapElement | null>(null)
 let rippleRaf: number | null = null
 
-// Hover reveal + ripple (pointer interaction)
 const hoverActive = ref(false)
 const hx = ref(50)
 const hy = ref(50)
 let thx = 50
 let thy = 50
 let hoverRaf: number | null = null
-let lastMoveT = 0
-let lastMoveX = 0
-let lastMoveY = 0
-let vSmooth = 0
-
-// Cursor-origin ripples (waves) that reveal color only along the wavefronts.
-type Wave = { x:number; y:number; r:number; a:number; w:number; vr:number }
-let waves: Wave[] = []
-let lastWaveEmit = 0
-let lastTick = 0
-let diagPx = 900
-
-const waveMask = ref('radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%)')
-const waveVis = ref('none')
-const colorO = ref(0)
-
-function ringMask(w: Wave){
-  const r0 = Math.max(0, w.r - w.w)
-  const r1 = w.r + w.w
-  const f = Math.min(22, Math.max(12, w.w * 0.75))
-  const a = Math.max(0, Math.min(1, w.a))
-  const s0 = Math.max(0, r0 - f)
-  const s1 = r0
-  const s2 = r1
-  const s3 = r1 + f
-  // Amplify mask opacity so the color read is obvious (still decays with wave alpha).
-  const alpha = Math.min(1, a * 2.0)
-  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${s0.toFixed(1)}px, rgba(255,255,255,${alpha.toFixed(3)}) ${s1.toFixed(1)}px ${s2.toFixed(1)}px, rgba(255,255,255,0) ${s3.toFixed(1)}px 2000px)`
-}
-function ringVis(w: Wave){
-  const r0 = Math.max(0, w.r - w.w)
-  const r1 = w.r + w.w
-  const f = Math.min(26, Math.max(14, w.w * 0.78))
-  const a = Math.max(0, Math.min(1, w.a)) * 0.16
-  const s0 = Math.max(0, r0 - f)
-  const s1 = r0
-  const s2 = r1
-  const s3 = r1 + f
-  return `radial-gradient(circle at ${w.x.toFixed(2)}% ${w.y.toFixed(2)}%, rgba(255,255,255,0) 0px ${s0.toFixed(1)}px, rgba(255,255,255,${a.toFixed(3)}) ${s1.toFixed(1)}px ${s2.toFixed(1)}px, rgba(255,255,255,0) ${s3.toFixed(1)}px 2000px)`
-}
-function recomputeWaveStyles(){
-  if (waves.length === 0){
-    waveMask.value = 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%)'
-    waveVis.value = 'none'
-    colorO.value = 0
-    return
-  }
-  const maxA = waves.reduce((m,w)=>Math.max(m,w.a), 0)
-  colorO.value = Math.min(1, maxA * 0.95)
-  waveMask.value = waves.map(ringMask).join(',')
-  waveVis.value = waves.map(ringVis).join(',')
-}
-
 
 const activeArc = ref(1)
 
 const mediaWrap = ref<HTMLDivElement | null>(null)
 const stackEl = ref<HTMLDivElement | null>(null)
 const incomingWrap = ref<HTMLDivElement | null>(null)
-const baseColorImg = ref<HTMLImageElement | null>(null)
-const baseBwImg = ref<HTMLImageElement | null>(null)
 const metaEl = ref<HTMLDivElement | null>(null)
 
 function reduce(){
   if (!process.client) return true
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function finePointer(){
+  if (!process.client) return false
+  return window.matchMedia('(hover: hover) and (pointer: fine)').matches
 }
 
 function animateMeta(){
@@ -189,8 +116,30 @@ function animateMeta(){
   gsap.fromTo(metaEl.value, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out', clearProps: 'transform' })
 }
 
+function runRipple(duration = 900){
+  if (!process.client || reduce() || !turb.value || !disp.value) return
+  if (rippleRaf) cancelAnimationFrame(rippleRaf)
+  rippleActive.value = true
+  const start = performance.now()
+
+  const step = (now: number) => {
+    const p = Math.min(1, (now - start) / duration)
+    const env = Math.sin(Math.PI * p)
+    turb.value?.setAttribute('baseFrequency', `${(0.012 + Math.sin(p * Math.PI * 3) * 0.003).toFixed(4)} ${(0.014 + Math.cos(p * Math.PI * 2.5) * 0.003).toFixed(4)}`)
+    disp.value?.setAttribute('scale', `${(18 * env).toFixed(2)}`)
+    if (p < 1) rippleRaf = requestAnimationFrame(step)
+    else {
+      disp.value?.setAttribute('scale', '0')
+      rippleActive.value = false
+      rippleRaf = null
+    }
+  }
+
+  rippleRaf = requestAnimationFrame(step)
+}
+
 function transitionToMedia(src: string, alt: string){
-  if (!process.client || reduce()){
+  if (!process.client || reduce()) {
     currentSrc.value = src
     currentAlt.value = alt
     return
@@ -201,7 +150,6 @@ function transitionToMedia(src: string, alt: string){
   if (!wrap || !stack) return
 
   incomingSrc.value = src
-  incomingAlt.value = alt
   transitioning.value = true
 
   nextTick(() => {
@@ -214,8 +162,6 @@ function transitionToMedia(src: string, alt: string){
     }
 
     gsap.killTweensOf([stack, inc, wrap])
-
-    // Premium swap: slight lens compression + clean wipe + micro blur.
     runRipple(980)
 
     gsap.set(wrap, { willChange: 'transform' })
@@ -241,51 +187,10 @@ function transitionToMedia(src: string, alt: string){
   })
 }
 
-function runRipple(duration = 900){
-  if (!process.client || reduce()) return
-  if (!turb.value || !disp.value) return
-
-  if (rippleRaf) cancelAnimationFrame(rippleRaf)
-  rippleRaf = null
-
-  rippleActive.value = true
-  const start = performance.now()
-
-  const baseX = 0.012
-  const baseY = 0.014
-  const ampX = 0.004
-  const ampY = 0.004
-  const maxScale = 18
-
-  const step = (now: number) => {
-    const p = Math.min(1, (now - start) / duration)
-    const env = Math.sin(Math.PI * p) // 0 → 1 → 0
-
-    const wobble = 2 * Math.PI * p * 1.25
-    const fx = baseX + ampX * Math.sin(wobble)
-    const fy = baseY + ampY * Math.cos(wobble * 0.92)
-    turb.value?.setAttribute('baseFrequency', `${fx.toFixed(4)} ${fy.toFixed(4)}`)
-
-    const scale = maxScale * env
-    disp.value?.setAttribute('scale', `${scale.toFixed(2)}`)
-
-    if (p < 1){
-      rippleRaf = requestAnimationFrame(step)
-    } else {
-      disp.value?.setAttribute('scale', '0')
-      rippleActive.value = false
-      rippleRaf = null
-    }
-  }
-
-  rippleRaf = requestAnimationFrame(step)
-}
-
 watch(() => props.modelValue, (v, prev) => {
   const p = props.projects[v]
   if (!p) return
 
-  // first render: just seed state (no swap animation)
   if (typeof prev !== 'number') {
     currentSrc.value = p.media.src
     currentAlt.value = p.media.alt
@@ -293,271 +198,225 @@ watch(() => props.modelValue, (v, prev) => {
     return
   }
 
-  // gentle arc shift (purely cosmetic)
   if (v > prev) activeArc.value = (activeArc.value + 1) % 3
   if (v < prev) activeArc.value = (activeArc.value + 2) % 3
 
-  // avoid redundant work
   if (p.media.src !== currentSrc.value || p.media.alt !== currentAlt.value) {
     transitionToMedia(p.media.src, p.media.alt)
   }
+
   animateMeta()
 }, { immediate: true })
 
 function next(){
   emit('update:modelValue', (props.modelValue + 1) % props.projects.length)
 }
+
 function prev(){
   emit('update:modelValue', (props.modelValue - 1 + props.projects.length) % props.projects.length)
-}
-
-function finePointer(){
-  if (!process.client) return false
-  return window.matchMedia('(hover: hover) and (pointer: fine)').matches
 }
 
 function setHoverTargetFromEvent(e: PointerEvent){
   const el = mediaWrap.value
   if (!el) return
   const r = el.getBoundingClientRect()
-  diagPx = Math.sqrt(r.width*r.width + r.height*r.height)
-  const x = ((e.clientX - r.left) / r.width) * 100
-  const y = ((e.clientY - r.top) / r.height) * 100
-  thx = Math.max(0, Math.min(100, x))
-  thy = Math.max(0, Math.min(100, y))
+  thx = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100))
+  thy = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100))
 }
 
 function tickHover(){
-  const now = performance.now()
-  const dt = lastTick ? Math.min(48, now - lastTick) : 16
-  lastTick = now
-  const dtS = dt / 1000
-
-  // advance cursor-origin waves (water rings)
-  if (waves.length){
-    for (const w of waves){
-      w.r += w.vr * dtS
-      w.a = Math.max(0, w.a - dtS * 0.28)
-    }
-    // keep a handful of recent rings for performance
-    waves = waves.filter(w => w.a > 0.02 && w.r < diagPx * 1.25).slice(-8)
-  }
-  recomputeWaveStyles()
-
-  // flowy follow (same feel as the About portrait)
   const a = hoverActive.value ? 0.18 : 0.12
-  hx.value = hx.value + (thx - hx.value) * a
-  hy.value = hy.value + (thy - hy.value) * a
-
-  const near = Math.abs(thx - hx.value) + Math.abs(thy - hy.value) < 0.08
-  const keep = !reduce() && (hoverActive.value || waves.length > 0 || !near)
-
-  if (keep){
-    hoverRaf = requestAnimationFrame(tickHover)
-  } else {
-    hoverRaf = null
-  }
+  hx.value += (thx - hx.value) * a
+  hy.value += (thy - hy.value) * a
+  const settled = Math.abs(thx - hx.value) + Math.abs(thy - hy.value) < 0.08
+  if (!reduce() && (hoverActive.value || !settled)) hoverRaf = requestAnimationFrame(tickHover)
+  else hoverRaf = null
 }
 
 function onEnter(e: PointerEvent){
   if (!finePointer()) return
   hoverActive.value = true
   setHoverTargetFromEvent(e)
-  lastMoveT = performance.now()
-  lastMoveX = e.clientX
-  lastMoveY = e.clientY
-  vSmooth = 0
-
-  // Seed a gentle first wave so the effect is visible immediately on hover.
-  if (!reduce()){
-    waves.push({ x: thx, y: thy, r: 0, a: 0.18, w: 26, vr: 760 })
-    if (waves.length > 8) waves = waves.slice(-8)
-    recomputeWaveStyles()
-  }
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
 function onMove(e: PointerEvent){
   if (!hoverActive.value || !finePointer()) return
   setHoverTargetFromEvent(e)
-
-  const now = performance.now()
-  const dt = Math.max(16, now - lastMoveT)
-  const dx = e.clientX - lastMoveX
-  const dy = e.clientY - lastMoveY
-  const v = Math.sqrt(dx*dx + dy*dy) / dt // px/ms
-  vSmooth = vSmooth * 0.82 + v * 0.18
-
-  // emit a wave (starts exactly at cursor)
-  if (!reduce()){
-    const since = now - lastWaveEmit
-    const moved = (Math.abs(dx) + Math.abs(dy)) > 0.25
-    if (since > 90 && moved){
-      lastWaveEmit = now
-      // Flowy: softer rings, longer-lived, less aggressive at high speed.
-      const amp = Math.max(0.10, Math.min(0.55, 0.14 + vSmooth * 0.90))
-      const width = Math.max(18, Math.min(44, 24 + vSmooth * 34))
-      const speed = Math.max(520, Math.min(1200, 640 + vSmooth * 2600)) // px/s
-      waves.push({ x: thx, y: thy, r: 0, a: amp, w: width, vr: speed })
-      if (waves.length > 8) waves = waves.slice(-8)
-      recomputeWaveStyles()
-    }
-  }
-  lastMoveT = now
-  lastMoveX = e.clientX
-  lastMoveY = e.clientY
-
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
 function onLeave(){
   hoverActive.value = false
-  // ease back to center
   thx = 50
   thy = 50
   if (hoverRaf == null) hoverRaf = requestAnimationFrame(tickHover)
 }
 
 const hoverStyle = computed(() => {
-  // parallax: keep it very subtle (museum luxury)
   const dx = (hx.value - 50) / 50
   const dy = (hy.value - 50) / 50
-  const px = dx * 6
-  const py = dy * 4
+  const px = dx * 7
+  const py = dy * 5
+  const rx = dy * -2.8
+  const ry = dx * 3.8
 
   return {
     '--mx': `${hx.value}%`,
     '--my': `${hy.value}%`,
     '--px': `${px.toFixed(2)}px`,
     '--py': `${py.toFixed(2)}px`,
-    '--ripO': String(Math.min(0.26, colorO.value * 0.26)),
-    '--waveMask': waveMask.value,
-    '--waveVis': waveVis.value,
-    '--colorO': String(colorO.value)
+    '--rx': `${rx.toFixed(2)}deg`,
+    '--ry': `${ry.toFixed(2)}deg`,
+    '--colorO': hoverActive.value ? '0.92' : '0.22',
+    '--glossO': hoverActive.value ? '1' : '0.42'
   }
 })
 
-const imgFxClass = computed(() => {
-  if (rippleActive.value) return 'swapRipple'
-  return ''
-})
+const imgFxClass = computed(() => rippleActive.value ? 'swapRipple' : '')
 
 onBeforeUnmount(() => {
   if (rippleRaf) cancelAnimationFrame(rippleRaf)
-  rippleRaf = null
-  rippleActive.value = false
-  try{ disp.value?.setAttribute('scale', '0') } catch { /* ignore */ }
-
   if (hoverRaf) cancelAnimationFrame(hoverRaf)
-  hoverRaf = null
-  hoverActive.value = false
+  try { disp.value?.setAttribute('scale', '0') } catch {}
 })
 </script>
 
 <style scoped>
-.stage{
-  flex:1;
-  display:grid;
-  grid-template-columns: auto minmax(0, 640px) auto;
-  align-items:center;
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 760px) auto;
+  align-items: center;
   column-gap: clamp(18px, 3.6vw, 56px);
-  justify-content:center;
-  padding-top: clamp(26px, 5.6vh, 54px);
+  justify-content: center;
+  padding-top: clamp(10px, 2.8vh, 24px);
   padding-bottom: clamp(18px, 4.6vh, 44px);
 }
-.center{
-  justify-self:center;
-  width:min(660px, 66vw);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+
+.center {
+  justify-self: center;
+  width: min(760px, 76vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 18px;
 }
-.mediaWrap{
+
+.mediaWrap {
   width: 100%;
   aspect-ratio: 16 / 9;
-  overflow:hidden;
-  position:relative;
+  overflow: hidden;
+  position: relative;
   background: color-mix(in srgb, var(--fg) 5%, var(--bg));
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
     0 24px 80px color-mix(in srgb, var(--fg) 4%, transparent);
 }
+
 .mediaWrap::before,
-.mediaWrap::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:2;
+.mediaWrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
 }
-.mediaWrap::before{
+
+.mediaWrap::before {
   background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 16%, transparent), transparent 24%, transparent 72%, color-mix(in srgb, var(--bg) 32%, transparent));
 }
-.mediaWrap::after{
+
+.mediaWrap::after {
   background: radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--fg) 7%, transparent), transparent 36%);
   mix-blend-mode: screen;
 }
-.mediaLink{
-  position:absolute;
-  inset:0;
-  display:block;
+
+.mediaLink {
+  position: absolute;
+  inset: 0;
+  display: block;
+  perspective: 1200px;
 }
 
-.imgStack{
-  position:absolute;
-  inset:0;
+.imgStack {
+  position: absolute;
+  inset: 0;
   --mx: 50%;
   --my: 50%;
   --px: 0px;
   --py: 0px;
-  --ripO: 0;
-  --colorO: 0;
-  --waveMask: radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 100%);
-  --waveVis: none;
+  --rx: 0deg;
+  --ry: 0deg;
+  --colorO: 0.22;
+  --glossO: 0.42;
   will-change: transform;
-  transform: translate3d(var(--px), var(--py), 0);
+  transform: translate3d(var(--px), var(--py), 0) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.015);
+  transition: transform .28s ease;
 }
 
-.media{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
   will-change: transform, clip-path, filter, opacity;
   --blur: 0px;
   filter: blur(var(--blur));
 }
 
-/* Default: thumbnails appear black & white via base layer; color only shows on ripple wavefronts */
-.media.bw{
-  filter: grayscale(1) contrast(1.02) blur(var(--blur));
+.media.bw {
+  filter: grayscale(1) contrast(1.06) brightness(0.84) blur(var(--blur));
+  transform: scale(1.015);
 }
-.media.color{
-  opacity: 1;
-  mask-image: var(--waveMask);
-  -webkit-mask-image: var(--waveMask);
+
+.media.color {
+  position: absolute;
+  inset: 0;
+  opacity: var(--colorO);
+  filter: saturate(1.02) contrast(1.04) brightness(.94) blur(var(--blur));
+  transform: scale(1.04);
+  transition: opacity .28s ease;
 }
-.incoming{ position:absolute; inset:0; }
-.media.top{ position:absolute; inset:0; }
 
-/* Swap ripple distortion during project change (applied on the stack so grayscale stays intact) */
-.imgStack.swapRipple{ filter: url(#rippleFilter); }
-
-
-.ripples{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  opacity: var(--ripO);
-  mix-blend-mode: normal;
-  background-image: var(--waveVis);
-  background-repeat: no-repeat;
-  filter: blur(0.35px);
+.hoverGloss,
+.hoverFrame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
-.play{
-  position:absolute;
+
+.hoverGloss {
+  background:
+    radial-gradient(360px circle at var(--mx) var(--my), color-mix(in srgb, var(--fg) 11%, transparent), transparent 52%),
+    linear-gradient(135deg, color-mix(in srgb, var(--fg) 10%, transparent), transparent 34%, transparent 68%, color-mix(in srgb, var(--fg) 7%, transparent));
+  mix-blend-mode: screen;
+  opacity: var(--glossO);
+  transition: opacity .28s ease;
+}
+
+.hoverFrame {
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.incoming {
+  position: absolute;
+  inset: 0;
+}
+
+.media.top {
+  position: absolute;
+  inset: 0;
+}
+
+.imgStack.swapRipple {
+  filter: url(#rippleFilter);
+}
+
+.play {
+  position: absolute;
   right: 10px;
   bottom: 10px;
   padding: 8px 10px;
@@ -567,55 +426,96 @@ onBeforeUnmount(() => {
   transition: opacity .18s ease, border-color .18s ease;
   z-index: 3;
 }
-.play:hover{ border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); opacity: .75; }
 
-.meta{
-  width:100%;
-  display:grid;
+.play:hover {
+  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
+  opacity: .75;
+}
+
+.meta {
+  width: 100%;
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
   padding: 16px 18px;
-  align-items:start;
+  align-items: start;
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
   background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 3.5%, transparent), color-mix(in srgb, var(--bg) 94%, transparent));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset;
 }
-.leftMeta{ justify-self:start; }
-.rightMeta{ justify-self:end; text-align:right; max-width: 340px; }
-.leftMeta .k:first-child{
+
+.leftMeta {
+  justify-self: start;
+}
+
+.rightMeta {
+  justify-self: end;
+  text-align: right;
+  max-width: 340px;
+}
+
+.leftMeta .k:first-child {
   font-size: calc(var(--fs) * 1.22);
 }
-.tags{
+
+.tags {
   grid-column: 1 / -1;
-  display:flex;
-  flex-wrap:wrap;
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  justify-content:flex-start;
+  justify-content: flex-start;
 }
-.tag{
-  border:1px solid var(--line);
+
+.tag {
+  border: 1px solid var(--line);
   padding: 6px 8px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
 }
 
-@media (prefers-reduced-motion: reduce){
-  .play{ transition:none; }
+@media (prefers-reduced-motion: reduce) {
+  .play,
+  .imgStack,
+  .media.color,
+  .hoverGloss {
+    transition: none;
+  }
 }
 
-@media (max-width: 1024px){
-  /* Balance arcs + thumbnail so arcs remain equal-to or larger than media height */
-  .stage{ grid-template-columns: auto minmax(0, 600px) auto; column-gap: clamp(10px, 2.4vw, 28px); }
-  .center{ width:min(560px, 72vw); }
+@media (max-width: 1024px) {
+  .stage {
+    grid-template-columns: auto minmax(0, 640px) auto;
+    column-gap: clamp(10px, 2.4vw, 28px);
+  }
+
+  .center {
+    width: min(640px, 78vw);
+  }
 }
-@media (max-width: 768px){
-  .stage{
+
+@media (max-width: 768px) {
+  .stage {
     grid-template-columns: 1fr;
-    padding-top: 4.5vh;
+    padding-top: 2vh;
     padding-bottom: 2vh;
   }
-  .center{ width: min(560px, 92vw); }
-  .meta{ grid-template-columns: 1fr; gap: 10px; }
-  .rightMeta{ justify-self:start; text-align:left; max-width: none; }
-  .tags{ justify-content:flex-start; }
+
+  .center {
+    width: min(560px, 92vw);
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .rightMeta {
+    justify-self: start;
+    text-align: left;
+    max-width: none;
+  }
+
+  .tags {
+    justify-content: flex-start;
+  }
 }
 </style>

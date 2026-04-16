@@ -1,4 +1,6 @@
 <template>
+  <LiquidEtherBackground />
+  <ClickSpark />
   <CursorDot />
   <div ref="layer" class="transitionLayer" aria-hidden="true" />
   <NuxtPage :transition="pageTransition" />

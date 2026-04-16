@@ -1,5 +1,5 @@
 <template>
-  <main class="frame">
+  <main class="frame homeFrame">
     <HeaderNav
       @home="navigateTo('/')"
       @work="navigateTo('/work')"
@@ -8,75 +8,44 @@
       @contact="navigateTo('/contact')"
     />
 
-    <section class="hero" aria-label="Intro" data-reveal>
+    <section class="hero heroFocused" aria-label="Intro" data-reveal>
       <div class="heroAmbient" aria-hidden="true">
         <span class="glow glowA"></span>
         <span class="glow glowB"></span>
-        <span class="glow glowC"></span>
       </div>
 
-      <div class="heroGrid">
-        <div class="heroCopy">
-          <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
+      <div class="heroIntro">
+        <div class="k dim2 heroKicker">{{ site.hero.kicker }}</div>
 
-          <div class="heroBadgeRow" aria-label="Positioning">
-            <span class="k dim2 heroBadge">AVAILABLE FOR FREELANCE + RETAINERS</span>
-            <span class="k dim2 heroBadge">BASED IN {{ site.location.toUpperCase() }}</span>
-          </div>
-
-          <h1 class="heroTitle title">{{ site.hero.headline }}</h1>
-
-          <p class="heroDesc">{{ site.hero.sub }}</p>
-
-          <div class="pillRow" aria-label="Services">
-            <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
-          </div>
-
-          <div class="heroActions" aria-label="Primary actions">
-            <button class="heroBtn primary" type="button" @click="openListing('all')">
-              <span class="k">VIEW WORK</span>
-              <span class="arrow" aria-hidden="true">→</span>
-            </button>
-
-            <button class="heroBtn" type="button" @click="navigateTo('/contact')">
-              <span class="k">GET IN TOUCH</span>
-            </button>
-          </div>
-
-          <div class="heroProofRow" aria-label="Proof points">
-            <div v-for="stat in heroStats" :key="stat.label" class="heroStat">
-              <div class="k dim2">{{ stat.label }}</div>
-              <div class="k">{{ stat.value }}</div>
-            </div>
-          </div>
+        <div class="heroBadgeRow" aria-label="Positioning">
+          <span class="k dim2 heroBadge">AVAILABLE FOR FREELANCE + RETAINERS</span>
+          <span class="k dim2 heroBadge">BASED IN {{ site.location.toUpperCase() }}</span>
         </div>
 
-        <NuxtLink class="heroFeature luxSpot" :to="`/project/${featuredProject.id}`" data-cursor>
-          <div class="heroFeatureMedia">
-            <img :src="featuredProject.media.src" :alt="featuredProject.media.alt" loading="eager" decoding="async" />
-            <div class="heroFeatureShade" aria-hidden="true"></div>
-            <div class="heroFeatureOverlay">
-              <span class="k dim2">FEATURED CASE</span>
-              <span class="k">( OPEN )</span>
-            </div>
-          </div>
+        <h1 class="heroTitle title">{{ site.hero.headline }}</h1>
+        <p class="heroDesc">{{ site.hero.sub }}</p>
 
-          <div class="heroFeatureBody">
-            <div class="heroFeatureTop">
-              <div>
-                <div class="k">{{ featuredProject.title }}</div>
-                <div class="k dim2">{{ featuredProject.badge }}</div>
-              </div>
-              <div class="k dim2 heroFeatureRank">{{ String(featuredProject.featuredRank ?? 1).padStart(2, '0') }}</div>
-            </div>
+        <div class="pillRow" aria-label="Services">
+          <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
+        </div>
 
-            <p class="k dim heroFeatureDesc">{{ featuredProject.desc }}</p>
+        <div class="heroActions" aria-label="Primary actions">
+          <button class="heroBtn primary" type="button" @click="openListing('all')">
+            <span class="k">VIEW WORK</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
 
-            <div class="heroFeatureTags">
-              <span v-for="tag in featuredProject.tags" :key="tag" class="k dim2 heroFeatureTag">{{ tag }}</span>
-            </div>
-          </div>
-        </NuxtLink>
+          <button class="heroBtn" type="button" @click="navigateTo('/contact')">
+            <span class="k">GET IN TOUCH</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="heroProofRow" aria-label="Proof points">
+        <div v-for="stat in heroStats" :key="stat.label" class="heroStat">
+          <div class="k dim2">{{ stat.label }}</div>
+          <div class="k">{{ stat.value }}</div>
+        </div>
       </div>
     </section>
 
@@ -144,10 +113,6 @@ const listingOpen = ref(false)
 const listingMode = ref<'all'|'best'>('all')
 const year = String(new Date().getFullYear())
 
-const featuredProject = computed(() => {
-  return projects.find(p => p.id === 'showreel') ?? projects.find(p => p.featuredRank === 1) ?? projects[0]
-})
-
 const heroStats = computed(() => [
   { label: 'SELECTED WORK', value: `${String(projects.length).padStart(2, '0')} PROJECTS` },
   { label: 'FOCUS', value: 'CINEMATIC + RETENTION' },
@@ -156,11 +121,10 @@ const heroStats = computed(() => [
 
 const listingEl = ref<HTMLElement | null>(null)
 const listingInner = ref<HTMLElement | null>(null)
-
 const lastActiveEl = ref<HTMLElement | null>(null)
 const restoreFocus = ref(true)
 
-function jump(i:number){ idx.value = i }
+function jump(i: number){ idx.value = i }
 
 function openListing(mode: 'all'|'best' = 'all'){
   listingMode.value = mode
@@ -181,16 +145,14 @@ function toggleListing(){
 }
 
 const listingProjects = computed(() => {
-  const all = projects
   const best = [...projects]
     .filter(p => typeof p.featuredRank === 'number')
-    .sort((a,b) => (a.featuredRank! - b.featuredRank!))
-  return listingMode.value === 'best' ? best : all
+    .sort((a, b) => (a.featuredRank! - b.featuredRank!))
+  return listingMode.value === 'best' ? best : projects
 })
 
-function selectProjectFromList(i:number, id:string){
+function selectProjectFromList(i: number, id: string){
   restoreFocus.value = false
-  // ensure the stage index follows the chosen project (even if list is "best")
   const fullIndex = projects.findIndex(p => p.id === id)
   if (fullIndex >= 0) jump(fullIndex)
   closeListing()
@@ -245,11 +207,9 @@ watch(listingOpen, async (open) => {
           e.preventDefault()
           last.focus()
         }
-      } else {
-        if (!inside || active === last) {
-          e.preventDefault()
-          first.focus()
-        }
+      } else if (!inside || active === last) {
+        e.preventDefault()
+        first.focus()
       }
     }
 
@@ -283,9 +243,9 @@ function reduce(){
 }
 
 function enterListing(el: Element, done: () => void){
-  if (reduce()){
+  if (reduce()) {
     gsap.set(el, { opacity: 1 })
-    done();
+    done()
     return
   }
   const inner = (el as HTMLElement).querySelector('.listingInner')
@@ -299,7 +259,6 @@ function enterListing(el: Element, done: () => void){
   tl.to(el, { opacity: 1, duration: 0.22 }, 0)
     .to(inner, { y: 0, opacity: 1, scale: 1, duration: 0.52 }, 0.08)
 
-  // Edge clip reveal (subtle)
   const innerEl = inner as HTMLElement
   tl.fromTo(innerEl, { clipPath: 'inset(0 0 12% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 0.62, ease: 'power3.out', clearProps: 'clip-path' }, 0.10)
     .to(innerEl as any, { '--edgeClip': 0, duration: 0.62, ease: 'power3.out' }, 0.10)
@@ -307,8 +266,8 @@ function enterListing(el: Element, done: () => void){
 }
 
 function leaveListing(el: Element, done: () => void){
-  if (reduce()){
-    done();
+  if (reduce()) {
+    done()
     return
   }
   const inner = (el as HTMLElement).querySelector('.listingInner')
@@ -319,11 +278,15 @@ function leaveListing(el: Element, done: () => void){
 </script>
 
 <style scoped>
-.hero{
+.homeFrame {
+  gap: 0;
+}
+
+.hero {
   position: relative;
-  margin-top: 14px;
-  width: min(1160px, 100%);
-  padding: 30px;
+  margin: 24px auto 0;
+  width: min(960px, 100%);
+  padding: 26px 28px 24px;
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
   background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), color-mix(in srgb, var(--bg) 96%, transparent));
   overflow: hidden;
@@ -332,77 +295,82 @@ function leaveListing(el: Element, done: () => void){
     0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
     0 28px 90px color-mix(in srgb, var(--fg) 4%, transparent);
 }
-.heroAmbient{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
+
+.heroAmbient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
-.glow{
-  position:absolute;
-  border-radius:999px;
+
+.glow {
+  position: absolute;
+  border-radius: 999px;
   filter: blur(36px);
-  opacity: .45;
+  opacity: .4;
 }
-.glowA{
-  width: 340px;
-  height: 340px;
+
+.glowA {
+  width: 320px;
+  height: 320px;
   top: -120px;
-  left: -40px;
+  left: -20px;
   background: color-mix(in srgb, var(--fg) 8%, transparent);
 }
-.glowB{
-  width: 300px;
-  height: 300px;
-  right: -70px;
-  top: 12%;
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
-}
-.glowC{
+
+.glowB {
   width: 280px;
   height: 280px;
-  left: 38%;
-  bottom: -160px;
-  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  right: -60px;
+  bottom: -150px;
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
 }
-.heroGrid{
-  position:relative;
-  z-index:1;
-  display:grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-  gap: 28px;
-  align-items:end;
+
+.heroFocused {
+  display: grid;
+  gap: 22px;
 }
-.heroCopy{
-  max-width: 720px;
+
+.heroIntro {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
 }
-.heroKicker{
-  opacity: .75;
+
+.heroKicker {
+  opacity: .78;
 }
-.heroBadgeRow{
-  margin-top: 18px;
-  display:flex;
-  flex-wrap:wrap;
+
+.heroBadgeRow {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
 }
-.heroBadge{
+
+.heroBadge {
   border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   padding: 8px 12px;
 }
-.heroTitle{
-  margin: 18px 0 0;
+
+.heroTitle {
+  margin: 18px auto 0;
   font: inherit;
   text-transform: none;
   letter-spacing: 0;
-  line-height: .98;
+  line-height: .96;
   font-weight: 600;
-  font-size: clamp(48px, 6.2vw, 92px);
+  font-size: clamp(44px, 6vw, 88px);
   color: var(--fg);
   max-width: 11ch;
 }
-.heroDesc{
-  margin: 18px 0 0;
-  max-width: 58ch;
+
+.heroDesc {
+  margin: 16px auto 0;
+  max-width: 62ch;
   font-size: calc(var(--fs) * 1.02);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -410,217 +378,187 @@ function leaveListing(el: Element, done: () => void){
   color: color-mix(in srgb, var(--fg) 78%, transparent);
 }
 
-.pillRow{
-  margin-top: 22px;
-  display:flex;
-  flex-wrap:wrap;
+.pillRow {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
-.pill{
+
+.pill {
   border: 1px solid var(--line);
   padding: 10px 14px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
 }
 
-.heroActions{
-  margin-top: 34px;
-  display:flex;
-  flex-wrap:wrap;
+.heroActions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 18px;
 }
-.heroProofRow{
-  margin-top: 26px;
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.heroStat{
-  border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  padding-top: 12px;
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-}
-.heroBtn{
+
+.heroBtn {
   border: 1px solid var(--line);
   padding: 16px 22px;
   min-width: 220px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 3.5%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
   backdrop-filter: blur(10px);
   transition: opacity .18s ease, border-color .18s ease, transform .14s ease;
 }
-.heroBtn.primary{
+
+.heroBtn.primary {
   border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
 }
-.heroBtn:hover{
+
+.heroBtn:hover {
   opacity: .86;
   border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
 }
-.heroBtn:active{
+
+.heroBtn:active {
   transform: scale(0.985);
 }
-.arrow{
+
+.arrow {
   font-size: 1.05em;
   opacity: .85;
 }
-.heroFeature{
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), color-mix(in srgb, var(--bg) 95%, transparent));
-  min-height: 100%;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--fg) 4%, transparent) inset,
-    0 20px 60px color-mix(in srgb, var(--fg) 4%, transparent);
-}
-.heroFeatureMedia{
-  position:relative;
-  aspect-ratio: 4 / 3;
-  overflow:hidden;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-}
-.heroFeatureMedia img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  filter: grayscale(.18) contrast(1.04) brightness(.86);
-}
-.heroFeatureShade{
-  position:absolute;
-  inset:0;
-  background: linear-gradient(180deg, rgba(0,0,0,.08), transparent 35%, rgba(0,0,0,.45));
-}
-.heroFeatureOverlay{
-  position:absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+
+.heroProofRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-.heroFeatureBody{
-  display:flex;
-  flex-direction:column;
-  gap: 14px;
-  padding: 18px;
-}
-.heroFeatureTop{
-  display:flex;
-  justify-content:space-between;
-  gap: 18px;
-  align-items:flex-start;
-}
-.heroFeatureRank{
-  opacity: .62;
-}
-.heroFeatureDesc{
-  margin: 0;
-  line-height: 1.65;
-  text-transform:none;
-  letter-spacing: .01em;
-}
-.heroFeatureTags{
-  display:flex;
-  flex-wrap:wrap;
+
+.heroStat {
+  border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-}
-.heroFeatureTag{
-  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  padding: 7px 9px;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-}
-.heroDivider{
-  margin-top: 24px;
+  text-align: center;
 }
 
-@media (max-width: 768px){
-  .hero{ padding: 22px 18px; }
-  .heroGrid{ grid-template-columns: 1fr; }
-  .heroProofRow{ grid-template-columns: 1fr; }
-  .heroTitle{ font-size: clamp(34px, 9vw, 64px); max-width: none; }
-  .heroBtn{ min-width: 0; width: 100%; justify-content:space-between; }
-}
-
-.listMode{
+.heroDivider {
   margin-top: 16px;
-  display:flex;
+}
+
+.listMode {
+  margin-top: 16px;
+  display: flex;
   gap: 10px;
 }
-.mode{
+
+.mode {
   border: 1px solid var(--line);
   padding: 8px 10px;
   background: color-mix(in srgb, var(--bg) 90%, transparent);
   opacity: .7;
   transition: opacity .18s ease, border-color .18s ease;
 }
-.mode[data-active="1"]{
+
+.mode[data-active="1"] {
   opacity: 1;
   border-color: color-mix(in srgb, var(--fg) 26%, var(--bg));
 }
-.mode:hover{ opacity: 1; }
 
-.listing{
-  position:fixed;
-  inset:0;
+.mode:hover {
+  opacity: 1;
+}
+
+.listing {
+  position: fixed;
+  inset: 0;
   background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(8px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9997;
 }
-.listingInner{
-  width:min(720px, 92vw);
+
+.listingInner {
+  width: min(720px, 92vw);
   border: 1px solid var(--line);
   background: var(--bg);
   padding: 22px;
-  position:relative;
-  overflow:hidden;
+  position: relative;
+  overflow: hidden;
 }
 
-/* subtle clip reveal edge */
-.listingInner::before{
-  content:"";
-  position:absolute;
-  inset:0;
+.listingInner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
   opacity: .55;
-  pointer-events:none;
-  /* clip reveal driven by --edgeClip (0-100) */
+  pointer-events: none;
   clip-path: inset(0 0 calc(var(--edgeClip, 100) * 1%) 0);
 }
-.list{
+
+.list {
   margin-top: 10px;
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   padding: 10px 12px;
   border: 1px solid var(--line);
   transition: border-color .18s ease, opacity .18s ease;
 }
-.row:hover{ border-color: color-mix(in srgb, var(--fg) 24%, var(--bg)); opacity: .78; }
-.actions{
-  margin-top: 14px;
-  display:flex;
-  gap: 14px;
-  flex-wrap:wrap;
-}
-.close{ margin-top: 18px; }
 
-@media (prefers-reduced-motion: reduce){
-  .row{ transition:none; }
+.row:hover {
+  border-color: color-mix(in srgb, var(--fg) 24%, var(--bg));
+  opacity: .78;
+}
+
+.actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.close {
+  margin-top: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 22px 18px 20px;
+  }
+
+  .heroProofRow {
+    grid-template-columns: 1fr;
+  }
+
+  .heroTitle {
+    font-size: clamp(34px, 9vw, 64px);
+    max-width: none;
+  }
+
+  .heroBtn {
+    min-width: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>
