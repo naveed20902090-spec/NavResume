@@ -23,7 +23,14 @@
         </div>
 
         <h1 class="heroTitle title">{{ site.hero.headline }}</h1>
-        <p class="heroDesc">{{ site.hero.sub }}</p>
+        <ScrambledText
+          class="heroDesc heroScramble"
+          :text="site.hero.sub"
+          :radius="40"
+          :duration="1"
+          :speed="1"
+          scramble-chars="xX"
+        />
 
         <div class="pillRow" aria-label="Services">
           <span v-for="pill in site.hero.pills" :key="pill" class="k dim2 pill">{{ pill }}</span>
@@ -376,6 +383,14 @@ function leaveListing(el: Element, done: () => void){
   text-transform: uppercase;
   line-height: 1.7;
   color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+
+.heroScramble :deep(.scrambledTextLine) {
+  margin: 0;
+}
+
+.heroScramble :deep(.char) {
+  min-width: 0.32ch;
 }
 
 .pillRow {
