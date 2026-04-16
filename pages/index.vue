@@ -8,6 +8,10 @@
       @contact="navigateTo('/contact')"
     />
 
+    <ProjectStage v-model="idx" :projects="projects" />
+
+    <div class="luxDivider heroDivider" data-line />
+
     <section class="hero heroFocused" aria-label="Intro" data-reveal>
       <div class="heroAmbient" aria-hidden="true">
         <span class="glow glowA"></span>
@@ -55,10 +59,6 @@
         </div>
       </div>
     </section>
-
-    <div class="luxDivider heroDivider" data-line />
-
-    <ProjectStage v-model="idx" :projects="projects" />
 
     <FooterNav
       :current="idx"
@@ -291,7 +291,7 @@ function leaveListing(el: Element, done: () => void){
 
 .hero {
   position: relative;
-  margin: 24px auto 0;
+  margin: 0 auto 0;
   width: min(960px, 100%);
   padding: 26px 28px 24px;
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
