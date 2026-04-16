@@ -1,4 +1,4 @@
-# michaelbardou-clone (Nuxt 3)
+# michaelbardou (Nuxt 3)
 
 This is a **layout + interaction clone** of michaelbardou.com based on publicly available screenshots and the site's stated tech stack (Nuxt + GSAP + Three.js).
 
