@@ -991,7 +991,7 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
   class WebGLManager {
     output!: Output
     autoDriver?: AutoDriver
-    lastUserInteraction = performance.now()
+    lastUserInteraction = performance.now() - autoResumeDelay - 48
     running = false
     private loopBound = this.loop.bind(this)
     private resizeBound = this.resize.bind(this)
@@ -1088,10 +1088,17 @@ gl_FragColor = vec4(newv, 0.0, 0.0);
     autoResumeDelay,
     autoRampDuration
   })
+
+  Mouse.coords.set(-0.22, 0.08)
+  Mouse.coords_old.set(-0.3, 0.12)
+
   webgl.start()
 
   window.setTimeout(() => {
-    if (!document.hidden) webgl.start()
+    if (!document.hidden) {
+      webgl.lastUserInteraction = performance.now() - autoResumeDelay - 48
+      webgl.start()
+    }
   }, 120)
 
   const ro = new ResizeObserver(() => {
